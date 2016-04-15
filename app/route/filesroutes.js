@@ -100,6 +100,10 @@ module.exports = function(app, passport, gfs) {
         app.get('/file/:id', function(req, res) {
                 if (req.headers.range) {
                 gfs.findOne({ _id: req.params.id }, function(err, file) {
+                     if(!file){
+                        res.send({success:false});
+                        return;
+                    }
                      var parts = req.headers['range'].replace(/bytes=/, "").split("-");
                      var partialstart = parts[0];
                      var partialend = parts[1];
@@ -137,6 +141,11 @@ module.exports = function(app, passport, gfs) {
 
 
                 gfs.findOne({ _id: req.params.id }, function(err, file) {
+                     if(!file){
+                        res.send({success:false});
+                        return;
+                    }
+
                     var readstream = gfs.createReadStream(
                         {_id:req.params.id}
                     );
