@@ -67,7 +67,6 @@ module.exports = function(passport) {
         passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
     },
     function(req, name, password, done) {
-        // asynchronous
         process.nextTick(function() {
             // if the user is not already logged in:
             if (!req.user) {
@@ -80,12 +79,14 @@ module.exports = function(passport) {
                         console.log('already exist');
                         return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
                     } else {
-
+                        console.log(req.body);
                         // create the user
                         var newUser  = new User();
                         newUser.name    = name;
                         newUser.password = newUser.generateHash(password);
-
+                        newUser.email =  req.body.email;
+                        var isadmin=req.body.isadmin=="on"
+                        newUser.isadmin = isadmin;
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
@@ -114,7 +115,7 @@ module.exports = function(passport) {
                             if (err)
                                 return done(err);
                             
-                            return done(null,user);
+                            return done(null,req.user);
                         });
                     }
                 });

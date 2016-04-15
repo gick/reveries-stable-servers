@@ -5,6 +5,7 @@ module.exports = function(app, passport) {
     var User = require('../models/user.js');
 
     app.use(express.static('/home/pgicquel/reveries/reveries-project/app'));
+    app.use(express.static('/home/pgicquel/Downloads/'));
 
 
 
