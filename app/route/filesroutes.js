@@ -43,7 +43,7 @@ module.exports = function(app, passport, gfs) {
                     filename: part.file.name,
                     mode: 'w',
                     content_type: part.file.mimetype,
-                    metadata: { creator: req.user._id, public: true }
+                    metadata: { creator: req.user._id, public: req.body.public=="true"}
                 });
                 writestream.write(part.file.data);
 

@@ -41,7 +41,7 @@ var gfs = new Grid(mongoose.connection.db);
 // routes ======================================================================
 require('./app/route/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
 require('./app/route/filesroutes.js')(app, passport,gfs); // load our routes and pass in our app and fully configured passport
-
+require('./app/route/documentroutes.js')(app);
 
 // launch ======================================================================
 app.listen(port);
