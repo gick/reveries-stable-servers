@@ -48,10 +48,10 @@ module.exports = function(app, passport, gfs) {
                 writestream.write(part.file.data);
 
                 writestream.on('close', function(file) {
+                res.send({success:true});
 
                 })
                 writestream.end();
-                res.send({success:true});
 
             } else {
                 res.send("Please authenticate first")

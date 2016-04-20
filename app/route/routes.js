@@ -4,8 +4,7 @@ module.exports = function(app, passport) {
     var express  = require('express');
     var User = require('../models/user.js');
 
-    app.use(express.static('/home/pgicquel/reveries/reveries-project/app'));
-    app.use(express.static('/home/pgicquel/Downloads/'));
+    app.use(express.static('/home/pgicquel/reveries-project/app'));
 
 
 
