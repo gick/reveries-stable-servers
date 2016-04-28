@@ -10,6 +10,7 @@ var userSchema = mongoose.Schema({
         password     : String,
         scenario : [{name:String,public:Boolean,date:Date,json_rep:String}],
         poi : [{name:String,comment:String,date:Date,latitude:Number,longitude:Number,photo:String,public:Boolean}],
+        freetext : [{question:String,response:String,imageId:String,wrongMessage:String,correctMessage:String}],
         isadmin : Boolean,
     }
 );

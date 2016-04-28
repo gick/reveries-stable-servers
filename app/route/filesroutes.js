@@ -29,10 +29,9 @@ module.exports = function(app, passport, gfs) {
                 writestream.write(part.file.data);
 
                 writestream.on('close', function(file) {
-                    updateUserPOI(file, req);
+                    updateUserPOI(file, req,res);
                 })
                 writestream.end();
-                res.send({ success: true })
             } else {
                 res.send({ success: true })
                 updateUserPOI(null, req);
@@ -193,7 +192,7 @@ module.exports = function(app, passport, gfs) {
     });
 
 
-    function updateUserPOI(file, req) {
+    function updateUserPOI(file, req,res) {
         User.findOne({ _id: req.user._id }, function(err, user) {
             console.log(user);
             if (file) {
@@ -201,14 +200,20 @@ module.exports = function(app, passport, gfs) {
                 user.poi.push(poi);
                 console.log(user);
                 user.save(function(err) {
-                    if (err) { console.log(err) } else { console.log("POI added for user" + req.user.name) }
+                    if (err) { console.log(err) } 
+                        else 
+                            {                 res.send({ success: true });
+                                console.log("POI added for user" + req.user.name) }
                 })
             } else {
                 var poi = { name: req.body.name, date: Date.now(), comment: req.body.comment, latitude: req.body.latitude, longitude: req.body.longitude, public: req.body.public }
                 user.poi.push(poi);
                 console.log(user);
                 user.save(function(err) {
-                    if (err) { console.log(err) } else { console.log("POI added for user" + req.user.name) }
+                    if (err) { console.log(err) } else { 
+                        res.send({ success: true })
+
+                         }
                 })
             }
 

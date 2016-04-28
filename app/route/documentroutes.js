@@ -28,4 +28,38 @@ module.exports = function(app) {
         User.update(condition, update, options, callback)
     });
 
+    app.post('/freetextactivity', function (req, res) {
+        if (!req.isAuthenticated()) {
+         res.send({ success: false, message: "Please authenticate" });
+         return;
+          }
+          var question=req.body.question;
+          var response=req.body.response;
+          var wrongMessage=req.body.wrongMessage;
+          var correctMessage=req.body.correctMessage;
+          var imageId=req.body.imageId;
+        var condition = { '_id': req.user._id };
+        var update = { $push: { freetext: { 'question': question,response:response,correctMessage:correctMessage,wrongMessage:wrongMessage,imageId:imageId } } };
+        var options = { multi: false };
+        var callback = function(err, numberAffected) {
+            if (err) {
+                res.send({ success: false })
+            } else res.send({ success: true, number: numberAffected });
+        }
+        User.update(condition, update, options, callback)
+    });
+
+
+app.get('/freetextactivity', function (req, res) {
+            if (req.isAuthenticated()) {
+            User.findOne({ _id: req.user._id }, function(err, user) {
+                res.send(user.freetext);
+
+            })
+        } else {
+            res.send({ success: false, message: "User not authenticated" })
+        }
+
+})
 }
+
