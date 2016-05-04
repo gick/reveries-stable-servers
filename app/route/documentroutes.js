@@ -28,18 +28,18 @@ module.exports = function(app) {
         User.update(condition, update, options, callback)
     });
 
-    app.post('/freetextactivity', function (req, res) {
+    app.post('/freetextactivity', function(req, res) {
         if (!req.isAuthenticated()) {
-         res.send({ success: false, message: "Please authenticate" });
-         return;
-          }
-          var question=req.body.question;
-          var response=req.body.response;
-          var wrongMessage=req.body.wrongMessage;
-          var correctMessage=req.body.correctMessage;
-          var imageId=req.body.imageId;
+            res.send({ success: false, message: "Please authenticate" });
+            return;
+        }
+        var question = req.body.question;
+        var response = req.body.response;
+        var wrongMessage = req.body.wrongMessage;
+        var correctMessage = req.body.correctMessage;
+        var imageId = req.body.imageId;
         var condition = { '_id': req.user._id };
-        var update = { $push: { freetext: { 'question': question,response:response,correctMessage:correctMessage,wrongMessage:wrongMessage,imageId:imageId } } };
+        var update = { $push: { freetext: { 'question': question, response: response, correctMessage: correctMessage, wrongMessage: wrongMessage, imageId: imageId } } };
         var options = { multi: false };
         var callback = function(err, numberAffected) {
             if (err) {
@@ -50,8 +50,8 @@ module.exports = function(app) {
     });
 
 
-app.get('/freetextactivity', function (req, res) {
-            if (req.isAuthenticated()) {
+    app.get('/freetextactivity', function(req, res) {
+        if (req.isAuthenticated()) {
             User.findOne({ _id: req.user._id }, function(err, user) {
                 res.send(user.freetext);
 
@@ -60,11 +60,11 @@ app.get('/freetextactivity', function (req, res) {
             res.send({ success: false, message: "User not authenticated" })
         }
 
-})
-}
+    })
 
 
-app.delete('/freetextactivity/:id',function(req,res){
+
+    app.delete('/freetextactivity/:id', function(req, res) {
         var condition = { 'freetext._id': req.params.id };
         var update = { $pull: { freetext: { '_id': req.params.id } } };
         var options = { multi: false };
@@ -74,4 +74,5 @@ app.delete('/freetextactivity/:id',function(req,res){
             } else res.send({ success: true, number: numberAffected });
         }
         User.update(condition, update, options, callback)
-    });
+    })
+}
