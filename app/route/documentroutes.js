@@ -63,3 +63,15 @@ app.get('/freetextactivity', function (req, res) {
 })
 }
 
+
+app.delete('/freetextactivity/:id',function(req,res){
+        var condition = { 'freetext._id': req.params.id };
+        var update = { $pull: { freetext: { '_id': req.params.id } } };
+        var options = { multi: false };
+        var callback = function(err, numberAffected) {
+            if (err) {
+                res.send({ success: false })
+            } else res.send({ success: true, number: numberAffected });
+        }
+        User.update(condition, update, options, callback)
+    });
