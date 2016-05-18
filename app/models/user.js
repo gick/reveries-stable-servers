@@ -1,19 +1,39 @@
 // load the things we need
 var mongoose = require('mongoose');
-var bcrypt   = require('bcrypt-nodejs');
+var bcrypt = require('bcrypt-nodejs');
 
 // define the schema for our user model
+/*
+var mapinfoSchema = mongoose.Schema({
+    marker:String,
+    centerLatitude:Number,
+    centerLongitude:Number,
+    zoomLevel:Number,
+})*/
 var userSchema = mongoose.Schema({
 
-    	name         : String,
-        email        : String,
-        password     : String,
-        scenario : [{name:String,public:Boolean,date:Date,json_rep:String}],
-        poi : [{name:String,comment:String,date:Date,latitude:Number,longitude:Number,photo:String,public:Boolean}],
-        freetext : [{question:String,response:String,imageId:String,wrongMessage:String,correctMessage:String}],
-        isadmin : Boolean,
-    }
-);
+    name: String,
+    email: String,
+    password: String,
+    scenario: [{ name: String, public: Boolean, date: Date, json_rep: String }],
+    poi: [{
+        name: String,
+        comment: String,
+        date: Date,
+        latitude: Number,
+        longitude: Number,
+        photo: String,
+        public: Boolean,
+        map: {
+            marker: String,
+            mapLatitude: Number,
+            mapLongitude: Number,
+            mapZoom: Number,
+        }
+    }],
+    freetext: [{ question: String, response: String, imageId: String, wrongMessage: String, correctMessage: String }],
+    isadmin: Boolean,
+});
 
 // generating a hash
 userSchema.methods.generateHash = function(password) {

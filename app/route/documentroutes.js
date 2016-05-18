@@ -126,6 +126,52 @@ module.exports = function(app) {
 
     })
 
+    app.post('/poimap', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        var condition = {
+            '_id': req.user._id
+        };
+
+        var poi = {
+            name: req.body.name,
+            date: Date.now(),
+            comment: req.body.comment,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude,
+            photo: req.body.imageId,
+            map: {
+                marker: req.body.marker,
+                mapLatitude: req.body.mapLatitude,
+                mapLongitude: req.body.mapLongitude,
+                mapZoom: req.body.mapZoom,
+            }
+        }
+        var update = {
+            $push: { 'poi': poi }
+        }
+        var options = {
+            multi: false
+        };
+        var callback = function(err, numberAffected) {
+            if (err) {
+                res.send({
+                    success: false
+                })
+            } else res.send({
+                success: true,
+                number: numberAffected
+            });
+        }
+        User.update(condition, update, options, callback)
+
+
+    })
 
 
     app.delete('/freetextactivity/:id', function(req, res) {
