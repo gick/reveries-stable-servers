@@ -147,7 +147,7 @@ module.exports = function(app) {
             photo: req.body.imageId,
             map: {
                 marker: req.body.marker,
-                mapLatitude: req.body.mapLatitude,
+                mapLatitude : req.body.mapLatitude,
                 mapLongitude: req.body.mapLongitude,
                 mapZoom: req.body.mapZoom,
             }

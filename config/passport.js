@@ -69,7 +69,6 @@ module.exports = function(passport) {
     function(req, name, password, done) {
         process.nextTick(function() {
             // if the user is not already logged in:
-            if (req.user) {
                 User.findOne({ 'name' :  name }, function(err, user) {
                     // if there are any errors, return the error
                     if (err)
@@ -95,9 +94,9 @@ module.exports = function(passport) {
                         });
                     }
 
-                });
+                })
             // if the user is logged in but has no local account...
-            } 
+            
 
         });
 
