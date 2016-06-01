@@ -2,6 +2,7 @@ module.exports = function(app) {
 
     // normal routes ===============================================================
     var User = require('../models/user.js');
+    var Game = require('../models/game.js')
 
     app.get('/listPublicPoi', function(req, res) {
         User.aggregate([{
@@ -74,6 +75,7 @@ module.exports = function(app) {
             return;
         }
         var question = req.body.question;
+        var name = req.body.name;
         var response = req.body.response;
         var wrongMessage = req.body.wrongMessage;
         var correctMessage = req.body.correctMessage;
@@ -86,6 +88,7 @@ module.exports = function(app) {
                 freetext: {
                     'question': question,
                     response: response,
+                    name: name,
                     correctMessage: correctMessage,
                     wrongMessage: wrongMessage,
                     imageId: imageId
@@ -120,9 +123,66 @@ module.exports = function(app) {
         } else {
             res.send({
                 success: false,
-                message: "User not authenticated"
+                message: 'User not authenticated'
             })
         }
+
+    })
+    app.post('/unitGame', function(req, res) {
+        var callback = function(err, numberAffected) {
+            if (err) {
+                res.send({
+                    success: false
+                })
+            } else {
+                res.send({
+                    success: true,
+                    number: numberAffected
+                });
+            }
+        };
+        var activities = [];
+        console.log(typeof(req.body.Activities))
+        if (req.body.Activities) {
+            var transformed=req.body.Activities.replace('},{','}},{{')
+            var activitiesList = transformed.split('},{');
+            
+            for (var i = 0; i < activitiesList.length; i++) { 
+                activities.push(JSON.parse(activitiesList[i]));
+            }
+        }
+        var gps = false;
+        if (req.body.gps === 'on') {
+            gps = true;
+        }
+        var compass = false;
+        if (req.body.compass === 'on') {
+            compass = true;
+        }
+        var POI = JSON.parse(req.body.POI);
+        console.log(POI);
+        console.log(typeof(POI))
+        var startMedia =JSON.parse(req.body['Starting media'])._id;
+        var idFeedbackMedia = JSON.parse(req.body['Feedback media'])._id;
+        var feedbackText = req.body.feedbackText;
+        var game = new Game();
+        game.activityName = req.body.activityName;
+        game.startMedia=startMedia;
+        game.feedbackMedia=idFeedbackMedia;
+        game.startText = req.body.startText;
+        game.gps = gps;
+        game.activities = activities
+        game.compass = compass;
+        game.POI = POI;
+        game.feedbackText = feedbackText;
+        game.save(function(err) {
+            if (err){
+                console.log(err)
+                return 500;
+            }
+
+            res.send(game)
+        });
 
     })
 
@@ -147,9 +207,12 @@ module.exports = function(app) {
             photo: req.body.imageId,
             map: {
                 marker: req.body.marker,
-                mapLatitude : req.body.mapLatitude,
+                mapLatitude: req.body.mapLatitude,
                 mapLongitude: req.body.mapLongitude,
                 mapZoom: req.body.mapZoom,
+                areaLat: req.body.areaLat,
+                areaLong: req.body.areaLong,
+                areaRadius: req.body.radius,
             }
         }
         var update = {

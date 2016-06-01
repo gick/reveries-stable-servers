@@ -39,7 +39,7 @@ module.exports = function(app, passport, gfs) {
                 res.send({
                     success: true
                 })
-                updateUserPOI(null, req,res);
+                updateUserPOI(null, req, res);
 
             }
         } else {
@@ -58,7 +58,9 @@ module.exports = function(app, passport, gfs) {
                 content_type: part.file.mimetype,
                 metadata: {
                     creator: req.user._id,
-                    public: req.body.public == "true"
+                    public: req.body.public == "true",
+                    title: part.file.name
+
                 }
             });
             writestream.write(part.file.data);
