@@ -4,20 +4,71 @@ module.exports = function(app, passport, gfs) {
 
     var User = require('../models/user.js');
 
-
-    app.get('/ressource/:type:test', function(req, res) {
-        if (req.isAuthenticated()) {
-
-        }
-        res.send('done')
-    });
+//###################################################################
+//--------------- UTILITY FUNCTIONS
+//###################################################################
 
 
+//update an existing PIO or create a new one if there is no
+//matching id
+    function updateUserPOI(file, req, res) {
+        User.findOne({
+            _id: req.user._id
+        }, function(err, user) {
+            console.log(user);
+            if (file) {
+                var poi = {
+                    name: req.body.name,
+                    date: Date.now(),
+                    comment: req.body.comment,
+                    latitude: req.body.latitude,
+                    longitude: req.body.longitude,
+                    photo: file._id,
+                    public: req.body.public
+                }
+                user.poi.push(poi);
+                user.save(function(err) {
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        res.send({
+                            success: true
+                        });
+                    }
+                })
+            } else {
+                var poi = {
+                    name: req.body.name,
+                    date: Date.now(),
+                    comment: req.body.comment,
+                    latitude: req.body.latitude,
+                    longitude: req.body.longitude,
+                    public: req.body.public
+                }
+                user.poi.push(poi);
+                user.save(function(err) {
+                    if (err) {
+                        res.send({success:false})
+                    } else {
+                        res.send({
+                            success: true
+                        })
 
+                    }
+                })
+            }
+
+
+        });
+    }
+
+
+
+
+// handle POI posted from app, since POI might contains a photo
+// we handle that case with if(req.files.file)
     app.post('/poi', function(req, res) {
         if (req.isAuthenticated()) {
-            console.log(req.body);
-            console.log(req.files);
             if (req.files.file) {
                 var part = req.files;
                 var writestream = gfs.createWriteStream({
@@ -43,12 +94,12 @@ module.exports = function(app, passport, gfs) {
 
             }
         } else {
-            res.send("Please authenticate first")
+            res.send('Please authenticate first')
         }
     });
 
 
-
+// handle media posted by authenticated users
     app.post('/file', function(req, res) {
         if (req.isAuthenticated()) {
             var part = req.files;
@@ -58,14 +109,14 @@ module.exports = function(app, passport, gfs) {
                 content_type: part.file.mimetype,
                 metadata: {
                     creator: req.user._id,
-                    public: req.body.public == "true",
+                    public: req.body.public === 'true',
                     title: part.file.name
 
                 }
             });
             writestream.write(part.file.data);
 
-            writestream.on('close', function(file) {
+            writestream.on('close', function() {
                 res.send({
                     success: true
                 });
@@ -74,7 +125,7 @@ module.exports = function(app, passport, gfs) {
             writestream.end();
 
         } else {
-            res.send("Please authenticate first")
+            res.send('Please authenticate first')
         }
     });
 
@@ -85,12 +136,10 @@ module.exports = function(app, passport, gfs) {
         };
         gfs.remove(options, function(err, file) {
             if (err) {
-                console.log(err);
                 res.send({
                     success: false
                 });
             } else {
-                console.log(file);
                 res.send({
                     success: true
                 })
@@ -100,17 +149,22 @@ module.exports = function(app, passport, gfs) {
 
     });
 
+
+// test function, not used in the web app
     app.get('/listAllFiles', function(req, res) {
         gfs.files.find({}).toArray(function(err, files) {
             res.send(files);
         })
     });
 
+
+// return all files owned by the user except photo associated
+// to POI. The web client decides which files are media or not
     app.get('/listUserMediaFiles', function(req, res) {
         if (req.isAuthenticated()) {
             gfs.files.find({
-                "metadata.creator": req.user._id,
-                "metadata.poi": {
+                'metadata.creator': req.user._id,
+                'metadata.poi': {
                     $exists: false
                 }
             }).toArray(function(err, files) {
@@ -119,10 +173,13 @@ module.exports = function(app, passport, gfs) {
         } else {
             res.send({
                 success: false,
-                message: "User not authenticated"
+                message: 'User not authenticated'
             })
         }
     });
+
+
+
     app.get('/poi', function getUserAllPOI(req, res) {
         if (req.isAuthenticated()) {
             User.findOne({
@@ -134,7 +191,7 @@ module.exports = function(app, passport, gfs) {
         } else {
             res.send({
                 success: false,
-                message: "User not authenticated"
+                message: 'User not authenticated'
             })
         }
     })
@@ -150,19 +207,13 @@ module.exports = function(app, passport, gfs) {
             } else {
                 res.send({
                     success: false,
-                    message: "POI do not exists"
+                    message: 'POI does not exists'
                 })
             }
 
 
         })
     })
-
-
-    app.get('/removeAllFiles', function(req, res) {
-        removeAllFiles();
-        res.send("console")
-    });
 
 
 
@@ -181,7 +232,7 @@ module.exports = function(app, passport, gfs) {
                     });
                     return;
                 }
-                var parts = req.headers['range'].replace(/bytes=/, "").split("-");
+                var parts = req.headers['range'].replace(/bytes=/, '').split('-');
                 var partialstart = parts[0];
                 var partialend = parts[1];
 
@@ -190,10 +241,10 @@ module.exports = function(app, passport, gfs) {
                 var chunksize = (end - start) + 1;
                 res.status(206)
                 res.set({
-                    "Content-Range": "bytes " + start + "-" + end + "/" + file.length,
-                    "Accept-Ranges": "bytes",
-                    "Content-Length": chunksize,
-                    "Content-Type": file.contentType,
+                    'Content-Range': 'bytes ' + start + '-' + end + '/' + file.length,
+                    'Accept-Ranges': 'bytes',
+                    'Content-Length': chunksize,
+                    'Content-Type': file.contentType,
                 });
 
                 var readstream = gfs.createReadStream({
@@ -246,87 +297,6 @@ module.exports = function(app, passport, gfs) {
         }
     });
 
-
-    function updateUserPOI(file, req, res) {
-        User.findOne({
-            _id: req.user._id
-        }, function(err, user) {
-            console.log(user);
-            if (file) {
-                var poi = {
-                    name: req.body.name,
-                    date: Date.now(),
-                    comment: req.body.comment,
-                    latitude: req.body.latitude,
-                    longitude: req.body.longitude,
-                    photo: file._id,
-                    public: req.body.public
-                }
-                user.poi.push(poi);
-                console.log(user);
-                user.save(function(err) {
-                    if (err) {
-                        console.log(err)
-                    } else {
-                        res.send({
-                            success: true
-                        });
-                        console.log("POI added for user" + req.user.name)
-                    }
-                })
-            } else {
-                var poi = {
-                    name: req.body.name,
-                    date: Date.now(),
-                    comment: req.body.comment,
-                    latitude: req.body.latitude,
-                    longitude: req.body.longitude,
-                    public: req.body.public
-                }
-                user.poi.push(poi);
-                console.log(user);
-                user.save(function(err) {
-                    if (err) {
-                        console.log(err)
-                    } else {
-                        res.send({
-                            success: true
-                        })
-
-                    }
-                })
-            }
-
-
-        });
-    }
-
-    function listAllFiles() {
-        gfs.files.find({}).toArray(function(err, files) {
-            files.forEach(logArrayElements)
-        })
-    }
-
-    function removeFiles(element, index, array) {
-        gfs.remove({
-            _id: element._id
-        }, function(err) {
-            if (err) {
-                console.log(err)
-            } else {
-                console.log('success');
-            }
-        });
-    }
-
-
-    function removeAllFiles() {
-        gfs.files.find({}).toArray(function(err, files) {
-            files.forEach(removeFiles)
-        })
-
-
-    }
 
 
 }

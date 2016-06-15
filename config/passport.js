@@ -1,7 +1,7 @@
 // load all the things we need
-var LocalStrategy    = require('passport-local').Strategy;
+var LocalStrategy = require('passport-local').Strategy;
 // load up the user model
-var User   = require('../app/models/user');
+var User = require('../app/models/user');
 
 // load the auth variables
 module.exports = function(passport) {
@@ -28,63 +28,59 @@ module.exports = function(passport) {
     // LOCAL LOGIN =============================================================
     // =========================================================================
     passport.use('local-login', new LocalStrategy({
-        // by default, local strategy uses username and password, we will override with email
-        usernameField : 'name',
-        passwordField : 'password',
-        passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
-    },
-    function(req, name, password, done) {
-        console.log('start')
-        // asynchronous
-        process.nextTick(function() {
-            User.findOne({ 'name' :  name }, function(err, user) {
-                // if there are any errors, return the error
-                if (err)
-                    return done(err);
+            // by default, local strategy uses username and password, we will override with email
+            usernameField: 'name',
+            passwordField: 'password',
+            passReqToCallback: true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
+        },
+        function(req, name, password, done) {
+            console.log('start')
+                // asynchronous
+            process.nextTick(function() {
+                User.findOne({ 'name': name }, function(err, user) {
+                    // if there are any errors, return the error
+                    if (err)
+                        return done(err);
 
-                // if no user is found, return the message
-                if (!user)
-                    return done(null, false, req.flash('loginMessage', 'No user found.'));
+                    // if no user is found, return the message
+                    if (!user)
+                        return done(null, false, req.flash('loginMessage', 'No user found.'));
 
-                if (!user.validPassword(password))
-                    return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
+                    if (!user.validPassword(password))
+                        return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
 
-                // all is well, return user
-                else
-                    return done(null, user);
+                    // all is well, return user
+                    else
+                        return done(null, user);
+                });
             });
-        });
 
-    }));
+        }));
 
     // =========================================================================
     // LOCAL SIGNUP ============================================================
     // =========================================================================
     passport.use('local-signup', new LocalStrategy({
-        // by default, local strategy uses username and password, we will override with email
-        usernameField : 'name',
-        passwordField : 'password',
-        passReqToCallback : true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
-    },
-    function(req, name, password, done) {
-        process.nextTick(function() {
-            // if the user is not already logged in:
-                User.findOne({ 'name' :  name }, function(err, user) {
+            // by default, local strategy uses username and password, we will override with email
+            usernameField: 'name',
+            passwordField: 'password',
+            passReqToCallback: true // allows us to pass in the req from our route (lets us check if a user is logged in or not)
+        },
+        function(req, name, password, done) {
+            process.nextTick(function() {
+                User.findOne({ 'name': name }, function(err, user) {
                     // if there are any errors, return the error
                     if (err)
                         return done(err);
                     // check to see if theres already a user with that email
                     if (user) {
-                        console.log('already exist');
                         return done(null, false, req.flash('signupMessage', 'That email is already taken.'));
                     } else {
-                        console.log(req.body);
-                        // create the user
-                        var newUser  = new User();
-                        newUser.name    = name;
+                        var newUser = new User();
+                        newUser.name = name;
                         newUser.password = newUser.generateHash(password);
-                        newUser.email =  req.body.email;
-                        var isadmin=req.body.isadmin=="on"
+                        newUser.email = req.body.email;
+                        var isadmin = req.body.isadmin == "on"
                         newUser.isadmin = isadmin;
                         newUser.save(function(err) {
                             if (err)
@@ -95,12 +91,13 @@ module.exports = function(passport) {
                     }
 
                 })
-            // if the user is logged in but has no local account...
-            
 
-        });
 
-    }));
+            });
+
+        }));
+
+
 
 
 
