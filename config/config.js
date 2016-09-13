@@ -1,2 +1,2 @@
-var webDirectory='/home/gicquel/reveries-project/app'
+var webDirectory='/home/gicquel/rev-rel/'
 module.exports=webDirectory
