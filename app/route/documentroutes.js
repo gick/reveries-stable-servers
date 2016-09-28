@@ -12,7 +12,7 @@ module.exports = function(app) {
     app.get('/listPublicPoi', function(req, res) {
         User.aggregate([{
             $unwind: {
-                path-: '$poi'
+                path: '$poi'
             }
         }, {
             $project: {
