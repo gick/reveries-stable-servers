@@ -1,6 +1,5 @@
 // load the things we need
 var mongoose = require('mongoose');
-var db = mongoose.createConnection('mongodb://localhost/play'); // connect to our database
 
 // define the schema for our user model
 /*
@@ -16,7 +15,6 @@ var mlg = mongoose.Schema({
     gameDescription:[{gameId:String,mlgOptional:Boolean,mlgScore:Number}]
 });
 
-var MLG = db.model('MLG', mlg)
+module.exports = mongoose.model('MLG', mlg);
     // generating a hash
 
-module.exports = MLG;

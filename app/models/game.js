@@ -1,6 +1,5 @@
 // load the things we need
 var mongoose = require('mongoose');
-var db = mongoose.createConnection('mongodb://localhost/play'); // connect to our database
 
 // define the schema for our user model
 /*
@@ -10,37 +9,20 @@ var mapinfoSchema = mongoose.Schema({
     centerLongitude:Number,
     zoomLevel:Number,
 })*/
-var game = mongoose.Schema({
+var gameSchema = mongoose.Schema({
 
     activityName: String,
     startText: String,
+    startMediaId:  String,
+    POIId: String,
     compass: Boolean,
-    feedbackMedia:  String,
-    startMedia:  String,
-    POI: {
-        name: String,
-        comment: String,
-        date: Date,
-        latitude: Number,
-        longitude: Number,
-        photo: String,
-        public: Boolean,
-        map: {
-            marker: String,
-            areaLat: Number,
-            areaLong: Number,
-            areaRadius: Number,
-            mapLatitude: Number,
-            mapLongitude: Number,
-            mapZoom: Number,
-        }
-    },
+    map:Boolean,
     passActivities: Boolean,
-    activities: [{  name:String,question: String, response: String, imageId: String, wrongMessage: String, correctMessage: String  }],
+    activities: [],
     feedbackText: String,
+    feedbackMediaId:  String,
 });
 
-var Game = db.model('Play', game)
     // generating a hash
 
-module.exports = Game;
+module.exports = mongoose.model('Game', gameSchema);
