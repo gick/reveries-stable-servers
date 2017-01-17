@@ -239,9 +239,9 @@ module.exports = function(app) {
     //from the game server
 
     app.post('/unitGame', function(req, res) {
-           var activityName = req.body.activityName;
+            var activityName = req.body.activityName;
             var startText = req.body.startText;
-            var startMediaId = req.body.startMedia;
+            var startMediaId = req.body.startMedia.split(',')[0];
             var gps = false;
             if (req.body.gps === 'on') {
                 gps = true;
@@ -259,10 +259,11 @@ module.exports = function(app) {
             if (req.body.noguidance === 'on') {
                 noguidance = true;
             }
-            var POIId = req.body.poi;
-            var feedbackMediaId = req.body.feedbackMedia;
+            var POIId = req.body.poi.split(',')[0];
+            var feedbackMediaId = req.body.fbMedia.split(',')[0];
             var feedbackText = req.body.feedbackText;
             var game = new Game();
+            game.startText = startText;
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
@@ -272,10 +273,6 @@ module.exports = function(app) {
             game.noguidance = noguidance;
             game.POIId = POIId;
             game.feedbackText = feedbackText;
-
-
-
-
             var activities = []
             var activitiesArray = req.body.activities.split(',');
             for (var i = 0; i < activitiesArray.length - 1; i++) {
@@ -307,13 +304,10 @@ module.exports = function(app) {
     app.post('/mlg', function(req, res) {
         var mlg = new MLG();
 
-        mlg.mlgName = req.body.mlgName,
-            mlg.gameDescription = [{
-                gameId: req.body.order,
-                mlgOptional: req.body.order,
-                mlgScore: req.body.score
-            }]
-
+        mlg.name = req.body.name
+        mlg.activityDescription = req.body.activityDescription
+        mlg.objectivesDescription = req.body.objectivesDescription
+        mlg.unitGames = req.body.unitGameId.split(',')
         mlg.save(function(err) {
             if (err) {
                 console.log(err)
@@ -387,7 +381,23 @@ module.exports = function(app) {
 
     })
 
-    //self explaining
+
+
+    app.delete('/mlg/:id', function(req, res) {
+        var callback = function(err, numberAffected) {
+            if (err) {
+                res.send({
+                    success: false
+                })
+            } else res.send({
+                success: true,
+                number: numberAffected
+            });
+        };
+        MLG.find({ _id: req.params.id }).remove(callback)
+
+        })
+        //self explaining
     app.delete('/freetextactivity/:id', function(req, res) {
         var condition = {
             'freetext._id': req.params.id

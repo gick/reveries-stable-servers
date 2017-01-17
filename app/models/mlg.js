@@ -11,8 +11,10 @@ var mapinfoSchema = mongoose.Schema({
 })*/
 var mlg = mongoose.Schema({
 
-    mlgName: String,
-    gameDescription:[{gameId:String,mlgOptional:Boolean,mlgScore:Number}]
+    name: String,
+    activityDescription : String,
+    objectivesDescription : String,
+    unitGames:[]
 });
 
 module.exports = mongoose.model('MLG', mlg);
