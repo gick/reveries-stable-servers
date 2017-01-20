@@ -1,0 +1,8 @@
+title: Reveries-stable-servers
+description: MEAN stack for  game authoring in pure HTML5
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-hacker
+
+gems:
+  - jekyll-mentions
