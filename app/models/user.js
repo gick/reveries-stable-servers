@@ -15,36 +15,6 @@ var userSchema = mongoose.Schema({
     name: String,
     email: String,
     password: String,
-    unitGame: [{ activityName: String, startText: String, compass: Boolean, startMedia: { id: String }, POI: { id: String }, passActivities: Boolean, activities: [{ id: String }], feedbackText: String, feedbackMedia: { id: String } }],
-    scenario: [{ name: String, public: Boolean, date: Date, json_rep: String }],
-    poi: [{
-        name: String,
-        comment: String,
-        date: Date,
-        latitude: Number,
-        longitude: Number,
-        photo: String,
-        public: Boolean,
-        map: {
-            marker: String,
-            areaLat: Number,
-            areaLong: Number,
-            areaRadius: Number,
-            mapLatitude: Number,
-            mapLongitude: Number,
-            mapZoom: Number,
-        }
-    }],
-    freetext: [{ name: String, question: String, response: String, imageId: String, wrongMessage: String, correctMessage: String }],
-    mcq: [{
-        question: String,
-        distractor1: String,
-        distractor2: String,
-        response: String,
-        imageId: String,
-        correctMessage: String,
-        wrongMessage: String
-    }],
     isadmin: Boolean,
 });
 

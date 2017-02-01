@@ -3,7 +3,6 @@ module.exports = function(app, passport, gfs) {
     // normal routes ===============================================================
 
     var User = require('../models/user.js');
-
     //###################################################################
     //--------------- UTILITY FUNCTIONS
     //###################################################################
@@ -11,11 +10,10 @@ module.exports = function(app, passport, gfs) {
 
     //update an existing PIO or create a new one if there is no
     //matching id
-    function updateUserPOI(file, req, res) {
+    function savePOI(file, req, res) {
         User.findOne({
             _id: req.user._id
         }, function(err, user) {
-            console.log(user);
             if (file) {
                 var poi = {
                     name: req.body.name,
@@ -108,8 +106,8 @@ module.exports = function(app, passport, gfs) {
                 mode: 'w',
                 content_type: part.file.mimetype,
                 metadata: {
-                    creator: req.user._id,
-                    public: req.body.public === 'true',
+                    owner: req.user._id,
+                    status: 'Private',
                     title: part.file.name
 
                 }
@@ -132,7 +130,7 @@ module.exports = function(app, passport, gfs) {
 
 
     // handle special case of medua : qr-codes  
-    app.post('/qrcode', function(req, res) {
+  /*  app.post('/qrcode', function(req, res) {
         if (req.isAuthenticated()) {
             var part = req.files;
             var writestream = gfs.createWriteStream({
@@ -160,7 +158,7 @@ module.exports = function(app, passport, gfs) {
         } else {
             res.send('Please authenticate first')
         }
-    });
+    });*/
 
 
 
@@ -193,15 +191,24 @@ module.exports = function(app, passport, gfs) {
 
 
     // return all files owned by the user except photo associated
-    // to POI. The web client decides which files are media or not
+    // to POI and QRCode. The web client decides which files are media or not
     app.get('/listUserMediaFiles', function(req, res) {
         if (req.isAuthenticated()) {
             gfs.files.find({
-                'metadata.creator': req.user._id,
+                $or: [{ 'metadata.owner': req.user._id }, { 'metadata.status': 'Public' }],
                 'metadata.poi': {
                     $exists: false
                 }
             }).toArray(function(err, files) {
+                for (var i = 0; i < files.length; i++) {
+                    var filedata = files[i]
+                    if (filedata.owner && filedata.owner == req.user._id) {
+                        filedata.readonly = "readwrite"
+                    } else {
+                        filedata.readonly = "readonly"
+                    }
+                }
+
                 res.send(files);
             })
         } else {
@@ -248,13 +255,25 @@ module.exports = function(app, passport, gfs) {
     });
 
 
-    // return all images files owned by the user 
+    // return all images files owned by the user execpt qr code
     app.get('/listUserImages', function(req, res) {
         if (req.isAuthenticated()) {
             gfs.files.find({
                 contentType: /.*image.*/,
-                'metadata.creator': req.user._id
+                $or: [{ 'metadata.owner': req.user._id }, { 'metadata.status': 'Public' }],
+                'metadata.poi': {
+                    $exists: false
+                }
             }).toArray(function(err, files) {
+                for (var i = 0; i < files.length; i++) {
+                    var filedata = files[i]
+                    if (filedata.metadata.owner && filedata.metadata.owner.toString() == req.user._id.toString()) {
+                        filedata.metadata.readonly = "readwrite"
+                    } else {
+                        filedata.metadata.readonly = "readonly"
+                    }
+                }
+
                 res.send(files);
             })
         } else {
@@ -264,23 +283,6 @@ module.exports = function(app, passport, gfs) {
             })
         }
     });
-
-    app.get('/poi', function getUserAllPOI(req, res) {
-        if (req.isAuthenticated()) {
-            User.findOne({
-                _id: req.user._id
-            }, function(err, user) {
-                res.send(user.poi);
-
-            })
-        } else {
-            res.send({
-                success: false,
-                message: 'User not authenticated'
-            })
-        }
-    })
-
     app.get('/poi/:id', function getSinglePOI(req, res) {
         User.findOne({
             'poi._id': req.params.id

@@ -4,73 +4,11 @@ module.exports = function(app) {
     var User = require('../models/user.js');
     var Game = require('../models/game.js');
     var MLG = require('../models/mlg.js');
+    var POI = require('../models/poi.js')
+    var FreeText = require('../models/freetext.js')
+    var MCQ = require('../models/mcq.js')
 
 
-
-
-
-    // Self explaining
-    app.get('/listPublicPoi', function(req, res) {
-        User.aggregate([{
-            $unwind: {
-                path: '$poi'
-            }
-        }, {
-            $project: {
-                '_id': '$poi._id',
-                'name': '$poi.name',
-                'date': '$poi.date',
-                'latitude': '$poi.latitude',
-                longitude: '$poi.longitude',
-                photo: '$poi.photo',
-                comment: '$poi.comment',
-                public: '$poi.public',
-                creator: '$name'
-            }
-        }, {
-            $match: {
-                public: true
-            }
-        }], function(err, result) {
-            if (err) {
-                console.log(err);
-                res.send({
-                    success: false
-                });
-            } else {
-                res.send(result)
-            }
-        })
-    });
-
-
-    // Self explaining
-    app.delete('/poi/:id', function deleteUserPOI(req, res) {
-        var condition = {
-            'poi._id': req.params.id
-        };
-        var update = {
-            $pull: {
-                poi: {
-                    '_id': req.params.id
-                }
-            }
-        };
-        var options = {
-            multi: false
-        };
-        var callback = function(err, numberAffected) {
-            if (err) {
-                res.send({
-                    success: false
-                })
-            } else res.send({
-                success: true,
-                number: numberAffected
-            });
-        }
-        User.update(condition, update, options, callback)
-    });
 
 
 
@@ -84,42 +22,54 @@ module.exports = function(app) {
             });
             return;
         }
-        var question = req.body.question;
-        var name = req.body.name;
-        var response = req.body.response;
-        var wrongMessage = req.body.wrongMessage;
-        var correctMessage = req.body.correctMessage;
-        var imageId = req.body.imageId;
-        var condition = {
-            '_id': req.user._id
-        };
-        var update = {
-            $push: {
-                freetext: {
-                    'question': question,
-                    response: response,
-                    name: name,
-                    correctMessage: correctMessage,
-                    wrongMessage: wrongMessage,
-                    imageId: imageId
-                }
-            }
-        };
-        var options = {
-            multi: false
-        };
-        var callback = function(err, numberAffected) {
+        var newFreeText = new FreeText()
+        newFreeText.question = req.body.question;
+        newFreeText.label=req.body.label;
+        newFreeText.name = req.body.name;
+        newFreeText.response = req.body.response;
+        newFreeText.wrongMessage = req.body.wrongMessage;
+        newFreeText.correctMessage = req.body.correctMessage;
+        newFreeText.imageId = req.body.imageId;
+        newFreeText.owner = req.user._id
+        newFreeText.status = req.body.status;
+        newFreeText.save(function(err) {
             if (err) {
-                res.send({
-                    success: false
-                })
-            } else res.send({
-                success: true,
-                number: numberAffected
-            });
-        }
-        User.update(condition, update, options, callback)
+                console.log(err)
+                res.send({ success: false })
+            } else res.send({ success: true })
+        })
     });
+
+
+
+    app.get('/freetextactivity', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            FreeText.find({
+                $or: [{ owner: req.user._id }, { status: 'Public' }]
+            }, function(err, freetexts) {
+                for (var i = 0; i < freetexts.length; i++) {
+                    var freetext = freetexts[i]
+                    if (freetext.owner == req.user._id) {
+                        freetext.readonly = "readwrite"
+                    } else {
+                        freetext.readonly = "readonly"
+                    }
+                }
+
+                res.send(freetexts)
+            })
+    })
+
+    app.delete('/freetextactivity/:id', function(req, res) {
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        FreeText.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send(doc);
+            })
+    });
+
     // Handle reception of a new mcq activity designed by conceptor
     app.post('/mcq', function(req, res) {
         if (!req.isAuthenticated()) {
@@ -129,86 +79,80 @@ module.exports = function(app) {
             });
             return;
         }
-        var question = req.body.question;
-        var distractor1 = req.body.distractor1;
-        var distractor2 = req.body.distractor2;
-        var response = req.body.response;
-        var wrongMessage = req.body.wrongMessage;
-        var correctMessage = req.body.correctMessage;
-        var imageId = req.body.imageId;
-        var condition = {
-            '_id': req.user._id
-        };
-        var update = {
-            $push: {
-                mcq: {
-                    'question': question,
-                    response: response,
-                    distractor1: distractor1,
-                    distractor2: distractor2,
-                    correctMessage: correctMessage,
-                    wrongMessage: wrongMessage,
-                    imageId: imageId
-                }
-            }
-        };
-        var options = {
-            multi: false
-        };
-        var callback = function(err, numberAffected) {
+        var Mcq = new MCQ();
+        Mcq.owner = req.user._id
+        Mcq.status = req.body.status
+        Mcq.label = req.body.label
+        Mcq.question = req.body.question;
+        Mcq.distractor1 = req.body.distractor1;
+        Mcq.distractor2 = req.body.distractor2;
+        Mcq.response = req.body.response;
+        Mcq.wrongMessage = req.body.wrongMessage;
+        Mcq.correctMessage = req.body.correctMessage;
+        Mcq.imageId = req.body.imageId;
+        Mcq.save(function(err) {
             if (err) {
-                res.send({
-                    success: false
-                })
-            } else res.send({
-                success: true,
-                number: numberAffected
-            });
-        }
-        User.update(condition, update, options, callback)
+                console.log(err)
+                res.send({ success: false })
+            } else res.send({ success: true })
+
+        })
     });
 
 
     // Return the list of mcq owned by current user
     app.get('/mcq', function(req, res) {
-        if (req.isAuthenticated()) {
-            User.findOne({
-                _id: req.user._id
-            }, function(err, user) {
-                res.send(user.mcq);
-
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            MCQ.find({
+                $or: [{ owner: req.user._id }, { status: 'Public' }]
+            }, function(err, mcqs) {
+                for (var i = 0; i < mcqs.length; i++) {
+                    var mcq = mcqs[i]
+                    if (mcq.owner == req.user._id) {
+                        mcq.readonly = "readwrite"
+                    } else {
+                        mcq.readonly = "readonly"
+                    }
+                }
+                res.send(mcqs)
             })
-        } else {
-            res.send({
-                success: false,
-                message: 'User not authenticated'
-            })
-        }
 
     });
 
+    app.delete('/mcq/:id', function(req, res) {
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        MCQ.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send(doc);
+            })
 
+    })
+
+    app.post('/mlg', function(req, res) {
+        var mlg = new MLG();
+
+        mlg.name = req.body.name
+        mlg.activityDescription = req.body.activityDescription
+        mlg.objectivesDescription = req.body.objectivesDescription
+        mlg.unitGames = req.body.unitGameId.split(',')
+        mlg.save(function(err) {
+            if (err) {
+                console.log(err)
+                return 500;
+            }
+
+            res.send({ success: 'ok' })
+        });
+
+
+    })
 
 
 
 
     // Return the list of freeTextActivities owned by current user
-    app.get('/freetextactivity', function(req, res) {
-        if (req.isAuthenticated()) {
-            User.findOne({
-                _id: req.user._id
-            }, function(err, user) {
-                res.send(user.freetext);
-
-            })
-        } else {
-            res.send({
-                success: false,
-                message: 'User not authenticated'
-            })
-        }
-
-    });
 
 
     //Return the list of Game (user independant)
@@ -254,11 +198,11 @@ module.exports = function(app) {
             if (req.body.map_compass === 'on') {
                 compass_map = true;
             }
-
-            var noguidance = false;
-            if (req.body.noguidance === 'on') {
-                noguidance = true;
+            var qrcodeId;
+            if (req.body.qrcode) {
+                qrcodeId = req.body.qrcode;
             }
+
             var POIId = req.body.poi.split(',')[0];
             var feedbackMediaId = req.body.fbMedia.split(',')[0];
             var feedbackText = req.body.feedbackText;
@@ -269,8 +213,8 @@ module.exports = function(app) {
             game.feedbackMediaId = feedbackMediaId;
             game.gps = gps;
             game.map = map;
+            game.qrcodeId = qrcodeId;
             game.compass_map = compass_map;
-            game.noguidance = noguidance;
             game.POIId = POIId;
             game.feedbackText = feedbackText;
             var activities = []
@@ -300,23 +244,28 @@ module.exports = function(app) {
         })
     })
 
-
-    app.post('/mlg', function(req, res) {
-        var mlg = new MLG();
-
-        mlg.name = req.body.name
-        mlg.activityDescription = req.body.activityDescription
-        mlg.objectivesDescription = req.body.objectivesDescription
-        mlg.unitGames = req.body.unitGameId.split(',')
-        mlg.save(function(err) {
-            if (err) {
-                console.log(err)
-                return 500;
+    app.put('/mcq/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        MCQ.findById(req.params.id, function(err, mcq) {
+            if (!err) {
+                if (req.user._id == mcq.owner) {
+                    res.send({
+                        success: true
+                    })
+                } else {
+                    res.send({
+                        success: false,
+                        message: 'User not owner of resource'
+                    })
+                }
             }
-
-            res.send({ success: 'ok' })
-        });
-
+        })
 
     })
 
@@ -334,9 +283,10 @@ module.exports = function(app) {
         var condition = {
             '_id': req.user._id
         };
-
         var poi = {
-            name: req.body.name,
+            owner: req.user._id,
+            status: req.body.status,
+            label: req.body.label,
             date: Date.now(),
             comment: req.body.comment,
             latitude: req.body.latitude,
@@ -352,112 +302,70 @@ module.exports = function(app) {
                 areaRadius: req.body.radius,
             }
         }
-        console.log(poi)
-        var update = {
-            $push: { 'poi': poi }
-        }
-        var options = {
-            multi: false
-        };
-
-        var callback = function(err, numberAffected) {
+        var Poi = new POI(poi)
+        Poi.save(function(err) {
             if (err) {
-                console.log('problem')
-
-                res.send({
-                    success: false
-                })
-            } else {
-                console.log('ok')
-
-                res.send({
-
-                    success: true,
-                    number: numberAffected
-                })
+                console.log(err)
+                return 500;
             }
-        }
-        User.update(condition, update, options, callback)
+
+            res.send({ success: 'ok' })
+        });
 
     })
+
+    // Self explaining
+    app.get('/poi', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            POI.find({
+                $or: [{ owner: req.user._id }, { status: 'Public' }]
+            }, function(err, pois) {
+                for (var i = 0; i < pois.length; i++) {
+                    var poi = pois[i]
+                    if (poi.owner == req.user._id) {
+                        poi.readonly = "readwrite"
+                    } else {
+                        poi.readonly = "readonly"
+                    }
+                }
+
+                res.send(pois)
+            })
+    })
+
+
+
+    // Self explaining
+    app.delete('/poi/:id', function(req, res) {
+        if (!req.params.user) { res.send({ success: false, message: 'user not authenticated' }) }
+        POI.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send(doc);
+            })
+    });
 
 
 
     app.delete('/mlg/:id', function(req, res) {
-        var callback = function(err, numberAffected) {
-            if (err) {
-                res.send({
-                    success: false
-                })
-            } else res.send({
-                success: true,
-                number: numberAffected
-            });
-        };
-        MLG.find({ _id: req.params.id }).remove(callback)
+            var callback = function(err, numberAffected) {
+                if (err) {
+                    res.send({
+                        success: false
+                    })
+                } else res.send({
+                    success: true,
+                    number: numberAffected
+                });
+            };
+            MLG.find({ _id: req.params.id }).remove(callback)
 
         })
         //self explaining
-    app.delete('/freetextactivity/:id', function(req, res) {
-        var condition = {
-            'freetext._id': req.params.id
-        };
-        var update = {
-            $pull: {
-                freetext: {
-                    '_id': req.params.id
-                }
-            }
-        };
-        var options = {
-            multi: false
-        };
-        var callback = function(err, numberAffected) {
-            if (err) {
-                res.send({
-                    success: false
-                })
-            } else {
-                res.send({
-                    success: true,
-                    number: numberAffected
-                });
-            }
-        }
-        User.update(condition, update, options, callback);
-
-    })
 
 
-    app.delete('/mcq/:id', function(req, res) {
-        var condition = {
-            'mcq._id': req.params.id
-        };
-        var update = {
-            $pull: {
-                mcq: {
-                    '_id': req.params.id
-                }
-            }
-        };
-        var options = {
-            multi: false
-        };
-        var callback = function(err, numberAffected) {
-            if (err) {
-                res.send({
-                    success: false
-                })
-            } else {
-                res.send({
-                    success: true,
-                    number: numberAffected
-                });
-            }
-        }
-        User.update(condition, update, options, callback);
 
-    })
 
 
 }

@@ -17,6 +17,7 @@ var gameSchema = mongoose.Schema({
     POIId: String,
     compass: Boolean,
     map:Boolean,
+    qrcodeId:String,
     passActivities: Boolean,
     activities: [],
     feedbackText: String,
