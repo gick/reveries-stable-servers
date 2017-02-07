@@ -7,9 +7,52 @@ module.exports = function(app) {
     var POI = require('../models/poi.js')
     var FreeText = require('../models/freetext.js')
     var MCQ = require('../models/mcq.js')
+    var StaticMedia=require('../models/staticmedia.js')
 
 
+    // Handle reception of a new static media
+    app.post('/staticmedia', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        var staticmedia = new StaticMedia()
+        staticmedia.label=req.body.label;
+        staticmedia.owner = req.user._id
+        staticmedia.status = req.body.status;
+        staticmedia.mkdown = req.body.mkdown;
 
+        staticmedia.save(function(err) {
+            if (err) {
+                console.log(err)
+                res.send({ success: false })
+            } else res.send({ success: true })
+        })
+    });
+
+
+    app.get('/staticmedia', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            StaticMedia.find({
+                $or: [{ owner: req.user._id }, { status: 'Public' }]
+            }, function(err, staticmedias) {
+                for (var i = 0; i < staticmedias.length; i++) {
+                    var staticmedia = staticmedias[i]
+                    if (staticmedia.owner == req.user._id) {
+                        staticmedia.readonly = "readwrite"
+                    } else {
+                        staticmedia.readonly = "readonly"
+                    }
+                }
+
+                res.send(staticmedias)
+            })
+    })
 
 
 
