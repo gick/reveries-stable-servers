@@ -12,7 +12,6 @@ var mapinfoSchema = mongoose.Schema({
 var gameSchema = mongoose.Schema({
 
     activityName: String,
-    startText: String,
     startMediaId:  String,
     POIId: String,
     compass: Boolean,
@@ -20,7 +19,6 @@ var gameSchema = mongoose.Schema({
     qrcodeId:String,
     passActivities: Boolean,
     activities: [],
-    feedbackText: String,
     feedbackMediaId:  String,
 });
 

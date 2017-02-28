@@ -7,7 +7,7 @@ module.exports = function(app) {
     var POI = require('../models/poi.js')
     var FreeText = require('../models/freetext.js')
     var MCQ = require('../models/mcq.js')
-    var StaticMedia=require('../models/staticmedia.js')
+    var StaticMedia = require('../models/staticmedia.js')
 
 
     // Handle reception of a new static media
@@ -20,7 +20,7 @@ module.exports = function(app) {
             return;
         }
         var staticmedia = new StaticMedia()
-        staticmedia.label=req.body.label;
+        staticmedia.label = req.body.label;
         staticmedia.owner = req.user._id
         staticmedia.status = req.body.status;
         staticmedia.mkdown = req.body.mkdown;
@@ -54,6 +54,13 @@ module.exports = function(app) {
             })
     })
 
+    app.delete('/staticmedia/:id', function(req, res) {
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        StaticMedia.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send(doc);
+            })
+    });
 
 
     // Handle reception of a new free text activity designed by conceptor
@@ -67,8 +74,7 @@ module.exports = function(app) {
         }
         var newFreeText = new FreeText()
         newFreeText.question = req.body.question;
-        newFreeText.label=req.body.label;
-        newFreeText.name = req.body.name;
+        newFreeText.label = req.body.label;
         newFreeText.response = req.body.response;
         newFreeText.wrongMessage = req.body.wrongMessage;
         newFreeText.correctMessage = req.body.correctMessage;
@@ -176,7 +182,8 @@ module.exports = function(app) {
     app.post('/mlg', function(req, res) {
         var mlg = new MLG();
 
-        mlg.name = req.body.name
+        mlg.label = req.body.label
+        mlg.activityInstructionId = req.body.activityInstructionId
         mlg.activityDescription = req.body.activityDescription
         mlg.objectivesDescription = req.body.objectivesDescription
         mlg.unitGames = req.body.unitGameId.split(',')
@@ -227,7 +234,6 @@ module.exports = function(app) {
 
     app.post('/unitGame', function(req, res) {
             var activityName = req.body.activityName;
-            var startText = req.body.startText;
             var startMediaId = req.body.startMedia.split(',')[0];
             var gps = false;
             if (req.body.gps === 'on') {
@@ -248,9 +254,7 @@ module.exports = function(app) {
 
             var POIId = req.body.poi.split(',')[0];
             var feedbackMediaId = req.body.fbMedia.split(',')[0];
-            var feedbackText = req.body.feedbackText;
             var game = new Game();
-            game.startText = startText;
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
@@ -259,7 +263,6 @@ module.exports = function(app) {
             game.qrcodeId = qrcodeId;
             game.compass_map = compass_map;
             game.POIId = POIId;
-            game.feedbackText = feedbackText;
             var activities = []
             var activitiesArray = req.body.activities.split(',');
             for (var i = 0; i < activitiesArray.length - 1; i++) {
@@ -287,6 +290,9 @@ module.exports = function(app) {
         })
     })
 
+
+    //Put operation allow to chhane the metadata
+    // limited to share status for the moment 
     app.put('/mcq/:id/share', function(req, res) {
         if (!req.isAuthenticated()) {
             res.send({
@@ -295,12 +301,55 @@ module.exports = function(app) {
             });
             return;
         }
-        MCQ.findById(req.params.id, function(err, mcq) {
+        switchStatus(MCQ, req, res);
+
+    })
+
+    app.put('/poi/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(POI, req, res);
+
+    })
+
+
+    //Put operation allow to chhane the metadata
+    // limited to share status for the moment 
+    app.put('/staticmedia/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(StaticMedia, req, res);
+
+    })
+
+
+    var switchStatus = function(model, req, res) {
+        model.findById(req.params.id, function(err, resp) {
             if (!err) {
-                if (req.user._id == mcq.owner) {
-                    res.send({
-                        success: true
-                    })
+                if (req.user._id == resp.owner) {
+                    if (resp.status == "Public") { resp.status = "Private" } else {
+                        resp.status = "Public"
+                    }
+                    resp.save(function(err) {
+                            if (err) {
+                                res.send({ success: false })
+                            } else {
+                                res.send({ success: true })
+                            }
+
+                        }
+
+                    )
                 } else {
                     res.send({
                         success: false,
@@ -310,7 +359,9 @@ module.exports = function(app) {
             }
         })
 
-    })
+    }
+
+
 
     //handle reception of a POI posted from a map,
     // with possible trigger area
@@ -331,7 +382,7 @@ module.exports = function(app) {
             status: req.body.status,
             label: req.body.label,
             date: Date.now(),
-            comment: req.body.comment,
+            label: req.body.label,
             latitude: req.body.latitude,
             longitude: req.body.longitude,
             photo: req.body.imageId,

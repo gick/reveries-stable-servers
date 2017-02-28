@@ -1,6 +1,7 @@
 module.exports = function(app, passport, gfs) {
 
     // normal routes ===============================================================
+    var mongoose = require('mongoose');
 
     var User = require('../models/user.js');
     //###################################################################
@@ -74,7 +75,7 @@ module.exports = function(app, passport, gfs) {
                     mode: 'w',
                     content_type: part.file.mimetype,
                     metadata: {
-                        creator: req.user._id,
+                        owner: req.user._id,
                         poi: true
                     }
                 });
@@ -106,7 +107,7 @@ module.exports = function(app, passport, gfs) {
                 mode: 'w',
                 content_type: part.file.mimetype,
                 metadata: {
-                    owner: req.user._id,
+                    owner: req.user._id.toString(),
                     status: 'Private',
                     title: part.file.name
 
@@ -130,35 +131,35 @@ module.exports = function(app, passport, gfs) {
 
 
     // handle special case of medua : qr-codes  
-  /*  app.post('/qrcode', function(req, res) {
-        if (req.isAuthenticated()) {
-            var part = req.files;
-            var writestream = gfs.createWriteStream({
-                filename: 'qrCode',
-                mode: 'w',
-                content_type: part.file.mimetype,
+    /*  app.post('/qrcode', function(req, res) {
+          if (req.isAuthenticated()) {
+              var part = req.files;
+              var writestream = gfs.createWriteStream({
+                  filename: 'qrCode',
+                  mode: 'w',
+                  content_type: part.file.mimetype,
 
-                metadata: {
-                    creator: req.user._id,
-                    public: req.body.public === 'true',
-                    qrcode: req.body.qrcode,
-                    type: 'qrcode'
-                }
-            });
-            writestream.write(part.file.data);
+                  metadata: {
+                      creator: req.user._id,
+                      public: req.body.public === 'true',
+                      qrcode: req.body.qrcode,
+                      type: 'qrcode'
+                  }
+              });
+              writestream.write(part.file.data);
 
-            writestream.on('close', function() {
-                res.send({
-                    success: true
-                });
+              writestream.on('close', function() {
+                  res.send({
+                      success: true
+                  });
 
-            })
-            writestream.end();
+              })
+              writestream.end();
 
-        } else {
-            res.send('Please authenticate first')
-        }
-    });*/
+          } else {
+              res.send('Please authenticate first')
+          }
+      });*/
 
 
 
@@ -222,7 +223,7 @@ module.exports = function(app, passport, gfs) {
     app.get('/listUserQrcode', function(req, res) {
         if (req.isAuthenticated()) {
             gfs.files.find({
-                'metadata.creator': req.user._id,
+                'metadata.owner': req.user._id,
                 'metadata.type': 'qrcode'
             }).toArray(function(err, files) {
                 res.send(files);
@@ -240,10 +241,20 @@ module.exports = function(app, passport, gfs) {
             gfs.files.find({
                 $and: [
                     { $or: [{ contentType: /.*audio.*/ }, { contentType: /.*video.*/ }] }, {
-                        'metadata.creator': req.user._id
+                        'metadata.owner': req.user._id.toString()
                     }
                 ]
             }).toArray(function(err, files) {
+
+                for (var i = 0; i < files.length; i++) {
+                    var filedata = files[i]
+                    if (filedata.metadata.owner && filedata.metadata.owner.toString() == req.user._id.toString()) {
+                        filedata.metadata.readonly = "readwrite"
+                    } else {
+                        filedata.metadata.readonly = "readonly"
+                    }
+                }
+
                 res.send(files);
             })
         } else {
@@ -260,7 +271,7 @@ module.exports = function(app, passport, gfs) {
         if (req.isAuthenticated()) {
             gfs.files.find({
                 contentType: /.*image.*/,
-                $or: [{ 'metadata.owner': req.user._id }, { 'metadata.status': 'Public' }],
+                $or: [{ 'metadata.owner': req.user._id.toString() }, { 'metadata.status': 'Public' }],
                 'metadata.poi': {
                     $exists: false
                 }
@@ -384,6 +395,47 @@ module.exports = function(app, passport, gfs) {
         }
     });
 
+    app.put('/file/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(req, res);
 
+    })
+
+
+    var switchStatus = function(req, res) {
+        var objectId = mongoose.Types.ObjectId(req.params.id)
+        console.log(objectId)
+        gfs.files.findOne({ _id: objectId }, function(err, resp) {
+            if (!err) {
+                if (req.user._id == resp.metadata.owner) {
+                    if (resp.metadata.status == "Public") { resp.metadata.status = "Private" } else {
+                        resp.metadata.status = "Public"
+                    }
+                    gfs.files.save(resp, function(err) {
+                            if (err) {
+                                res.send({ success: false })
+                            } else {
+                                res.send({ success: true })
+                            }
+
+                        }
+
+                    )
+                } else {
+                    res.send({
+                        success: false,
+                        message: 'User not owner of resource'
+                    })
+                }
+            }
+        })
+
+    }
 
 }
