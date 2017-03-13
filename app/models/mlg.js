@@ -12,9 +12,7 @@ var mapinfoSchema = mongoose.Schema({
 var mlg = mongoose.Schema({
 
     label: String,
-    activityInstruction: String,
-    activityDescription : String,
-    objectivesDescription : String,
+    staticMedia: String,
     unitGames:[]
 });
 

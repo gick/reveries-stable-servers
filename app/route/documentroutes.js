@@ -54,6 +54,18 @@ module.exports = function(app) {
             })
     })
 
+
+    app.get('/staticmedia/:id', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            StaticMedia.findOne({ '_id': req.params.id },
+                function(err, doc) {
+                    res.send(doc);
+                })
+    })
+
+
     app.delete('/staticmedia/:id', function(req, res) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         StaticMedia.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
@@ -78,7 +90,7 @@ module.exports = function(app) {
         newFreeText.response = req.body.response;
         newFreeText.wrongMessage = req.body.wrongMessage;
         newFreeText.correctMessage = req.body.correctMessage;
-        newFreeText.imageId = req.body.imageId;
+        newFreeText.mediaId = req.body.mediaId;
         newFreeText.owner = req.user._id
         newFreeText.status = req.body.status;
         newFreeText.save(function(err) {
@@ -105,8 +117,8 @@ module.exports = function(app) {
                     } else {
                         freetext.readonly = "readonly"
                     }
-                }
 
+                }
                 res.send(freetexts)
             })
     })
@@ -138,7 +150,7 @@ module.exports = function(app) {
         Mcq.response = req.body.response;
         Mcq.wrongMessage = req.body.wrongMessage;
         Mcq.correctMessage = req.body.correctMessage;
-        Mcq.imageId = req.body.imageId;
+        Mcq.mediaId = req.body.mediaId;
         Mcq.save(function(err) {
             if (err) {
                 console.log(err)
@@ -183,9 +195,7 @@ module.exports = function(app) {
         var mlg = new MLG();
 
         mlg.label = req.body.label
-        mlg.activityInstructionId = req.body.activityInstructionId
-        mlg.activityDescription = req.body.activityDescription
-        mlg.objectivesDescription = req.body.objectivesDescription
+        mlg.staticMedia = req.body.staticMedia
         mlg.unitGames = req.body.unitGameId.split(',')
         mlg.save(function(err) {
             if (err) {
@@ -234,7 +244,12 @@ module.exports = function(app) {
 
     app.post('/unitGame', function(req, res) {
             var activityName = req.body.activityName;
-            var startMediaId = req.body.startMedia.split(',')[0];
+            var startMediaId = null
+            var POIId = null
+            var activitiesArray
+            var feedbackMediaId
+            if (req.body.startMedia)
+                startMediaId = req.body.startMedia.split(',')[0];
             var gps = false;
             if (req.body.gps === 'on') {
                 gps = true;
@@ -247,27 +262,34 @@ module.exports = function(app) {
             if (req.body.map_compass === 'on') {
                 compass_map = true;
             }
-            var qrcodeId;
-            if (req.body.qrcode) {
-                qrcodeId = req.body.qrcode;
-            }
+            if (req.body.poi)
+                POIId = req.body.poi.split(',')[0];
 
-            var POIId = req.body.poi.split(',')[0];
-            var feedbackMediaId = req.body.fbMedia.split(',')[0];
+            if (req.body.feedbackMediaId)
+                feedbackMediaId = req.body.fbMedia.split(',')[0];
+
             var game = new Game();
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
+            game.poiScorePA = req.body.poiScorePA
+            game.poiPA = req.body.poiPA;
+            game.act1successScore = req.body.act1successScore
+            game.act1successMed = req.body.act1successMed
+            game.act2successScore = req.body.act2successScore
+            game.act2successMed = req.body.act2successMed
+
             game.gps = gps;
             game.map = map;
-            game.qrcodeId = qrcodeId;
             game.compass_map = compass_map;
             game.POIId = POIId;
             var activities = []
-            var activitiesArray = req.body.activities.split(',');
-            for (var i = 0; i < activitiesArray.length - 1; i++) {
-                var unitActivity = { "type": activitiesArray[i + 1], "id": activitiesArray[i] };
-                activities.push(unitActivity);
+            if (req.body.activities) {
+                var activitiesArray = req.body.activities.split(',');
+                for (var i = 0; i < activitiesArray.length - 1; i++) {
+                    var unitActivity = { "type": activitiesArray[i + 1], "id": activitiesArray[i] };
+                    activities.push(unitActivity);
+                }
             }
             game.activities = activities;
 
