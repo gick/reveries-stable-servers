@@ -312,6 +312,18 @@ module.exports = function(app) {
         })
     })
 
+    app.put('/freetext/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(FreeText, req, res);
+
+    })
+
 
     //Put operation allow to chhane the metadata
     // limited to share status for the moment 
@@ -358,7 +370,7 @@ module.exports = function(app) {
     var switchStatus = function(model, req, res) {
         model.findById(req.params.id, function(err, resp) {
             if (!err) {
-                if (req.user._id == resp.owner) {
+                if (resp && req.user._id == resp.owner) {
                     if (resp.status == "Public") { resp.status = "Private" } else {
                         resp.status = "Public"
                     }

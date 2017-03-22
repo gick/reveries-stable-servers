@@ -196,10 +196,7 @@ module.exports = function(app, passport, gfs) {
     app.get('/listUserMediaFiles', function(req, res) {
         if (req.isAuthenticated()) {
             gfs.files.find({
-                $or: [{ 'metadata.owner': req.user._id }, { 'metadata.status': 'Public' }],
-                'metadata.poi': {
-                    $exists: false
-                }
+                $or: [{ 'metadata.owner': req.user._id }, { 'metadata.status': 'Public' }]
             }).toArray(function(err, files) {
                 for (var i = 0; i < files.length; i++) {
                     var filedata = files[i]
