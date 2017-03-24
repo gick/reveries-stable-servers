@@ -195,7 +195,7 @@ module.exports = function(app) {
         var mlg = new MLG();
 
         mlg.label = req.body.label
-        mlg.staticMedia = req.body.staticMedia
+        mlg.staticMedia = req.body.mediaId
         mlg.unitGames = req.body.unitGameId.split(',')
         mlg.save(function(err) {
             if (err) {
