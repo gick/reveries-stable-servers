@@ -248,8 +248,25 @@ module.exports = function(app) {
             var POIId = null
             var activitiesArray
             var feedbackMediaId
+            var situatedAct1;
+            var situatedAct2;
+            var situatedAct3;
             if (req.body.startMedia)
-                startMediaId = req.body.startMedia.split(',')[0];
+                startMediaId = req.body.startMedia;
+            if (req.body.feedbackMedia)
+                feedbackMediaId = req.body.feedbackMedia;
+            if (req.body.poi)
+                POIId = req.body.poi;
+            if(req.body.situatedAct1){
+                situatedAct1=req.body.situatedAct1
+            }
+            if(req.body.situatedAct2){
+                situatedAct1=req.body.situatedAct2
+            }
+            if(req.body.situatedAct3){
+                situatedAct1=req.body.situatedAct3
+            }
+
             var gps = false;
             if (req.body.gps === 'on') {
                 gps = true;
@@ -262,16 +279,20 @@ module.exports = function(app) {
             if (req.body.map_compass === 'on') {
                 compass_map = true;
             }
-            if (req.body.poi)
-                POIId = req.body.poi.split(',')[0];
-
-            if (req.body.feedbackMediaId)
-                feedbackMediaId = req.body.fbMedia.split(',')[0];
 
             var game = new Game();
+            
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
+            game.POIId=POIId
+            game.activities=[];
+            if(situatedAct1)
+                game.activities.push(situatedAct1)
+            if(situatedAct2)
+                game.activities.push(situatedAct2)
+            if(situatedAct3)
+                game.activities.push(situatedAct3)
             game.poiScorePA = req.body.poiScorePA
             game.poiPA = req.body.poiPA;
             game.act1successScore = req.body.act1successScore
@@ -282,16 +303,7 @@ module.exports = function(app) {
             game.gps = gps;
             game.map = map;
             game.compass_map = compass_map;
-            game.POIId = POIId;
-            var activities = []
-            if (req.body.activities) {
-                var activitiesArray = req.body.activities.split(',');
-                for (var i = 0; i < activitiesArray.length - 1; i++) {
-                    var unitActivity = { "type": activitiesArray[i + 1], "id": activitiesArray[i] };
-                    activities.push(unitActivity);
-                }
-            }
-            game.activities = activities;
+
 
 
 
