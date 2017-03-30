@@ -1,5 +1,5 @@
-module.exports = function(app) {
-
+module.exports = function(app, gfs) {
+    var spawn = require('child_process').spawn;
     // normal routes ===============================================================
     var User = require('../models/user.js');
     var Game = require('../models/game.js');
@@ -257,14 +257,14 @@ module.exports = function(app) {
                 feedbackMediaId = req.body.feedbackMedia;
             if (req.body.poi)
                 POIId = req.body.poi;
-            if(req.body.situatedAct1){
-                situatedAct1=req.body.situatedAct1
+            if (req.body.situatedAct1) {
+                situatedAct1 = req.body.situatedAct1
             }
-            if(req.body.situatedAct2){
-                situatedAct1=req.body.situatedAct2
+            if (req.body.situatedAct2) {
+                situatedAct1 = req.body.situatedAct2
             }
-            if(req.body.situatedAct3){
-                situatedAct1=req.body.situatedAct3
+            if (req.body.situatedAct3) {
+                situatedAct1 = req.body.situatedAct3
             }
 
             var gps = false;
@@ -281,17 +281,17 @@ module.exports = function(app) {
             }
 
             var game = new Game();
-            
+
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
-            game.POIId=POIId
-            game.activities=[];
-            if(situatedAct1)
+            game.POIId = POIId
+            game.activities = [];
+            if (situatedAct1)
                 game.activities.push(situatedAct1)
-            if(situatedAct2)
+            if (situatedAct2)
                 game.activities.push(situatedAct2)
-            if(situatedAct3)
+            if (situatedAct3)
                 game.activities.push(situatedAct3)
             game.poiScorePA = req.body.poiScorePA
             game.poiPA = req.body.poiPA;
@@ -379,6 +379,7 @@ module.exports = function(app) {
     })
 
 
+
     var switchStatus = function(model, req, res) {
         model.findById(req.params.id, function(err, resp) {
             if (!err) {
@@ -448,11 +449,31 @@ module.exports = function(app) {
                 console.log(err)
                 return 500;
             }
-
             res.send({ success: 'ok' })
         });
 
+
     })
+
+    app.get('/qrcode/:id', function(req, res) {
+        //res.header('Content-Type', 'image/png');
+
+        tail = spawn('qrencode', ['-o','-','['+req.params.id+']','-s',30]);
+        tail.stdout.on('data', function(data) {
+            console.log('stdout: ' + data);
+            res.write(data, 'utf-8');
+        });
+        tail.stderr.on('data', function(data) {
+            console.log('stderr: ' + data);
+            res.write(data, 'utf-8');
+        });
+        tail.on('exit', function(code) {
+            console.log('child process exited with code ' + code);
+            res.end(code);
+        });
+    });
+
+
 
     // Self explaining
     app.get('/poi', function(req, res) {

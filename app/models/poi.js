@@ -7,6 +7,7 @@ var poiSchema = mongoose.Schema({
         status:String,
         label: String,
         comment: String,
+        qrcodeid:String,
         date: Date,
         latitude: Number,
         longitude: Number,

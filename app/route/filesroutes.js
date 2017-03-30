@@ -2,64 +2,18 @@ module.exports = function(app, passport, gfs) {
 
     // normal routes ===============================================================
     var mongoose = require('mongoose');
-
+    var zbarimg = require('zbarimg')
     var User = require('../models/user.js');
+    var QrCode = require('qrcode-reader');
+    var FileAPI = require('file-api')
+    var fs = require('fs');
+
+
     //###################################################################
     //--------------- UTILITY FUNCTIONS
     //###################################################################
 
 
-    //update an existing PIO or create a new one if there is no
-    //matching id
-    function savePOI(file, req, res) {
-        User.findOne({
-            _id: req.user._id
-        }, function(err, user) {
-            if (file) {
-                var poi = {
-                    name: req.body.name,
-                    date: Date.now(),
-                    comment: req.body.comment,
-                    latitude: req.body.latitude,
-                    longitude: req.body.longitude,
-                    photo: file._id,
-                    public: req.body.public
-                }
-                user.poi.push(poi);
-                user.save(function(err) {
-                    if (err) {
-                        console.log(err)
-                    } else {
-                        res.send({
-                            success: true
-                        });
-                    }
-                })
-            } else {
-                var poi = {
-                    name: req.body.name,
-                    date: Date.now(),
-                    comment: req.body.comment,
-                    latitude: req.body.latitude,
-                    longitude: req.body.longitude,
-                    public: req.body.public
-                }
-                user.poi.push(poi);
-                user.save(function(err) {
-                    if (err) {
-                        res.send({ success: false })
-                    } else {
-                        res.send({
-                            success: true
-                        })
-
-                    }
-                })
-            }
-
-
-        });
-    }
 
 
 
@@ -97,6 +51,29 @@ module.exports = function(app, passport, gfs) {
         }
     });
 
+    app.post('/qrscan', function(req, res) {
+        var path = 'filetest.png',
+            buffer = req.files.file.data;
+
+        fs.open(path, 'w', function(err, fd) {
+            if (err) {
+                throw 'error opening file: ' + err;
+            }
+
+            fs.write(fd, buffer, 0, buffer.length, null, function(err) {
+                if (err) throw 'error writing file: ' + err;
+                fs.close(fd, function() {
+
+                    zbarimg('filetest.png',function(data,hello){
+                        console.log(data)
+                        console.log(hello)
+                        res.send('ok')
+                    });
+                })
+            });
+        });
+
+    })
 
     // handle media posted by authenticated users
     app.post('/file', function(req, res) {
