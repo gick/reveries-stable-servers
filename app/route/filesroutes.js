@@ -2,11 +2,7 @@ module.exports = function(app, passport, gfs) {
 
     // normal routes ===============================================================
     var mongoose = require('mongoose');
-    var zbarimg = require('zbarimg')
     var User = require('../models/user.js');
-    var QrCode = require('qrcode-reader');
-    var FileAPI = require('file-api')
-    var fs = require('fs');
 
 
     //###################################################################
@@ -51,29 +47,6 @@ module.exports = function(app, passport, gfs) {
         }
     });
 
-    app.post('/qrscan', function(req, res) {
-        var path = 'filetest.png',
-            buffer = req.files.file.data;
-
-        fs.open(path, 'w', function(err, fd) {
-            if (err) {
-                throw 'error opening file: ' + err;
-            }
-
-            fs.write(fd, buffer, 0, buffer.length, null, function(err) {
-                if (err) throw 'error writing file: ' + err;
-                fs.close(fd, function() {
-
-                    zbarimg('filetest.png',function(data,hello){
-                        console.log(data)
-                        console.log(hello)
-                        res.send('ok')
-                    });
-                })
-            });
-        });
-
-    })
 
     // handle media posted by authenticated users
     app.post('/file', function(req, res) {
