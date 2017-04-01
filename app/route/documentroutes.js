@@ -256,7 +256,8 @@ module.exports = function(app, gfs) {
 
             var poiGPSValidation
             var poiQRValidation
-
+            var poiIncorrectMessage
+            var poiReachedMessage
             var cluePOIId
             
             var situatedAct1;
@@ -265,6 +266,13 @@ module.exports = function(app, gfs) {
             if(req.body.gps){
                 poiGPSValidation=true
             }
+            if(req.body.poiIncorrectMessage){
+                poiIncorrectMessage=req.body.poiIncorrectMessage
+            }
+            if(req.body.poiReachedMessage){
+                poiReachedMessage=req.body.poiReachedMessage
+            }
+
             if(req.body.QR){
                 poiQRValidation=true
             }
@@ -304,6 +312,8 @@ module.exports = function(app, gfs) {
 
 
             var game = new Game();
+            game.poiIncorrectMessage=poiIncorrectMessage
+            game.poiReachedMessage=poiReachedMessage
             game.poiGPSValidation=poiGPSValidation
             game.poiQRValidation=poiQRValidation
             game.poiGuidMap=poiGuidMap
