@@ -14,14 +14,18 @@ var gameSchema = mongoose.Schema({
     activityName: String,
     startMediaId: String,
     POIId: String,
-    compass: Boolean,
-    map: Boolean,
     passActivities: Boolean,
     activities: [],
     feedbackMediaId: String,
     poiScorePA: String,
-    poiPA: String,
-    
+    poiPAId: String,
+    cluePOIId:String,
+    poiGuidFolia:Boolean,
+    poiGuidMap:Boolean,
+    poiGuidClue:Boolean,
+    poiGPSValidation:Boolean,
+    poiQRValidation:Boolean,
+
 });
 
 // generating a hash

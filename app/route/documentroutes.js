@@ -248,9 +248,44 @@ module.exports = function(app, gfs) {
             var POIId = null
             var activitiesArray
             var feedbackMediaId
+            
+            var poiPAId
+            var poiGuidFolia
+            var poiGuidMap
+            var poiGuidClue
+
+            var poiGPSValidation
+            var poiQRValidation
+
+            var cluePOIId
+            
             var situatedAct1;
             var situatedAct2;
             var situatedAct3;
+            if(req.body.gps){
+                poiGPSValidation=true
+            }
+            if(req.body.QR){
+                poiQRValidation=true
+            }
+
+            if (req.body.map) {
+                poiGuidMap = true
+            }
+            if (req.body.folia) {
+                poiGuidFolia = true
+            }
+            if (req.body.cluePoiMedia) {
+                poiGuidClue = true
+            }
+
+            if (req.body.cluePOIId) {
+                cluePOIId = req.body.cluePOIId
+            }
+
+            if (req.body.poiPAId) {
+                poiPAId = req.body.poiPAId
+            }
             if (req.body.startMedia)
                 startMediaId = req.body.startMedia;
             if (req.body.feedbackMedia)
@@ -261,31 +296,25 @@ module.exports = function(app, gfs) {
                 situatedAct1 = req.body.situatedAct1
             }
             if (req.body.situatedAct2) {
-                situatedAct1 = req.body.situatedAct2
+                situatedAct2 = req.body.situatedAct2
             }
             if (req.body.situatedAct3) {
-                situatedAct1 = req.body.situatedAct3
+                situatedAct3 = req.body.situatedAct3
             }
 
-            var gps = false;
-            if (req.body.gps === 'on') {
-                gps = true;
-            }
-            var map = false;
-            if (req.body.map === 'on') {
-                map = true;
-            }
-            var compass_map = false;
-            if (req.body.map_compass === 'on') {
-                compass_map = true;
-            }
 
             var game = new Game();
-
+            game.poiGPSValidation=poiGPSValidation
+            game.poiQRValidation=poiQRValidation
+            game.poiGuidMap=poiGuidMap
+            game.poiGuidClue=poiGuidClue
+            game.poiGuidFolia=poiGuidFolia
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
             game.POIId = POIId
+            game.poiPAId = poiPAId
+            game.cluePOIId = cluePOIId
             game.activities = [];
             if (situatedAct1)
                 game.activities.push(situatedAct1)
@@ -299,11 +328,6 @@ module.exports = function(app, gfs) {
             game.act1successMed = req.body.act1successMed
             game.act2successScore = req.body.act2successScore
             game.act2successMed = req.body.act2successMed
-
-            game.gps = gps;
-            game.map = map;
-            game.compass_map = compass_map;
-
 
 
 
@@ -458,7 +482,7 @@ module.exports = function(app, gfs) {
     app.get('/qrcode/:id', function(req, res) {
         //res.header('Content-Type', 'image/png');
 
-        tail = spawn('qrencode', ['-o','-','['+req.params.id+']','-s',30]);
+        tail = spawn('qrencode', ['-o', '-', '[' + req.params.id + ']', '-s', 30]);
         tail.stdout.on('data', function(data) {
             console.log('stdout: ' + data);
             res.write(data, 'utf-8');
