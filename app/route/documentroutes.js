@@ -151,13 +151,45 @@ module.exports = function(app, gfs) {
         Mcq.wrongMessage = req.body.wrongMessage;
         Mcq.correctMessage = req.body.correctMessage;
         Mcq.mediaId = req.body.mediaId;
-        Mcq.save(function(err) {
-            if (err) {
-                console.log(err)
-                res.send({ success: false })
-            } else res.send({ success: true })
+        //save if no mediaId
+        if (!req.body.itemId) {
+            Mcq.save(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send({ success: false })
+                } else res.send({ success: true })
 
-        })
+            })
+        }
+        //update existing MCQ if mediaId
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            MCQ.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, MCQ with id " + req.body.itemId + " does not exists")
+                } else {
+                    console.log("Updating question " + req.body.itemId)
+                    toUpdate.owner = req.user._id
+                    toUpdate.status = req.body.status
+                    toUpdate.label = req.body.label
+                    toUpdate.question = req.body.question;
+                    toUpdate.distractor1 = req.body.distractor1;
+                    toUpdate.distractor2 = req.body.distractor2;
+                    toUpdate.response = req.body.response;
+                    toUpdate.wrongMessage = req.body.wrongMessage;
+                    toUpdate.correctMessage = req.body.correctMessage;
+                    toUpdate.mediaId = req.body.mediaId;
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true })
+
+                    })
+
+                }
+
+            })
+        }
     });
 
 
@@ -248,7 +280,7 @@ module.exports = function(app, gfs) {
             var POIId = null
             var activitiesArray
             var feedbackMediaId
-            
+
             var poiPAId
             var poiGuidFolia
             var poiGuidMap
@@ -259,22 +291,22 @@ module.exports = function(app, gfs) {
             var poiIncorrectMessage
             var poiReachedMessage
             var cluePOIId
-            
+
             var situatedAct1;
             var situatedAct2;
             var situatedAct3;
-            if(req.body.gps){
-                poiGPSValidation=true
+            if (req.body.gps) {
+                poiGPSValidation = true
             }
-            if(req.body.poiIncorrectMessage){
-                poiIncorrectMessage=req.body.poiIncorrectMessage
+            if (req.body.poiIncorrectMessage) {
+                poiIncorrectMessage = req.body.poiIncorrectMessage
             }
-            if(req.body.poiReachedMessage){
-                poiReachedMessage=req.body.poiReachedMessage
+            if (req.body.poiReachedMessage) {
+                poiReachedMessage = req.body.poiReachedMessage
             }
 
-            if(req.body.QR){
-                poiQRValidation=true
+            if (req.body.QR) {
+                poiQRValidation = true
             }
 
             if (req.body.map) {
@@ -312,13 +344,13 @@ module.exports = function(app, gfs) {
 
 
             var game = new Game();
-            game.poiIncorrectMessage=poiIncorrectMessage
-            game.poiReachedMessage=poiReachedMessage
-            game.poiGPSValidation=poiGPSValidation
-            game.poiQRValidation=poiQRValidation
-            game.poiGuidMap=poiGuidMap
-            game.poiGuidClue=poiGuidClue
-            game.poiGuidFolia=poiGuidFolia
+            game.poiIncorrectMessage = poiIncorrectMessage
+            game.poiReachedMessage = poiReachedMessage
+            game.poiGPSValidation = poiGPSValidation
+            game.poiQRValidation = poiQRValidation
+            game.poiGuidMap = poiGuidMap
+            game.poiGuidClue = poiGuidClue
+            game.poiGuidFolia = poiGuidFolia
             game.activityName = activityName;
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
