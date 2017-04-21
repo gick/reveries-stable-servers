@@ -24,13 +24,38 @@ module.exports = function(app, gfs) {
         staticmedia.owner = req.user._id
         staticmedia.status = req.body.status;
         staticmedia.mkdown = req.body.mkdown;
+        if (!req.body.itemId) {
 
-        staticmedia.save(function(err) {
-            if (err) {
-                console.log(err)
-                res.send({ success: false })
-            } else res.send({ success: true })
-        })
+            staticmedia.save(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send({ success: false })
+                } else res.send({ success: true })
+            })
+        }
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            StaticMedia.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, Freetext with id " + req.body.itemId + " does not exists")
+                } else {
+                    console.log("Updating question " + req.body.itemId)
+                    toUpdate.label = req.body.label;
+                    toUpdate.owner = req.user._id
+                    toUpdate.status = req.body.status;
+                    toUpdate.mkdown = req.body.mkdown;
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true })
+
+                    })
+
+                }
+
+            })
+        }
+
     });
 
 
@@ -93,12 +118,43 @@ module.exports = function(app, gfs) {
         newFreeText.mediaId = req.body.mediaId;
         newFreeText.owner = req.user._id
         newFreeText.status = req.body.status;
-        newFreeText.save(function(err) {
-            if (err) {
-                console.log(err)
-                res.send({ success: false })
-            } else res.send({ success: true })
-        })
+
+        if (!req.body.itemId) {
+            newFreeText.save(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send({ success: false })
+                } else res.send({ success: true })
+            })
+        }
+
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            FreeText.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, Freetext with id " + req.body.itemId + " does not exists")
+                } else {
+                    console.log("Updating question " + req.body.itemId)
+                    toUpdate.question = req.body.question;
+                    toUpdate.label = req.body.label;
+                    toUpdate.response = req.body.response;
+                    toUpdate.wrongMessage = req.body.wrongMessage;
+                    toUpdate.correctMessage = req.body.correctMessage;
+                    toUpdate.mediaId = req.body.mediaId;
+                    toUpdate.owner = req.user._id
+                    toUpdate.status = req.body.status;
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true })
+
+                    })
+
+                }
+
+            })
+        }
+
     });
 
 
