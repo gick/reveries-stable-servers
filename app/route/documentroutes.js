@@ -3,6 +3,9 @@ module.exports = function(app, gfs) {
     // normal routes ===============================================================
     var User = require('../models/user.js');
     var Game = require('../models/game.js');
+    var Badge = require('../models/badge.js');
+    var InventoryItem = require('../models/inventoryItem.js');
+
     var MLG = require('../models/mlg.js');
     var POI = require('../models/poi.js')
     var FreeText = require('../models/freetext.js')
@@ -57,6 +60,160 @@ module.exports = function(app, gfs) {
         }
 
     });
+
+
+    app.post('/badge', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        var badge = new Badge()
+        badge.label = req.body.label;
+        badge.badgeText = req.body.badgeText;
+        badge.owner = req.user._id
+        badge.status = req.body.status;
+        badge.badgePageId = req.body.badgePageId;
+
+        if (!req.body.itemId) {
+            badge.save(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send({ success: false })
+                } else res.send({ success: true })
+            })
+        }
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            Badge.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, Badge with id " + req.body.itemId + " does not exists")
+                } else {
+                    console.log("Updating badge " + req.body.itemId)
+                    toUpdate.label = req.body.label;
+                    toUpdate.badgeText = req.body.badgeText;
+
+                    toUpdate.owner = req.user._id
+                    toUpdate.status = req.body.status;
+                    toUpdate.mediaId = req.body.mediaId;
+                    toUpdate.badgePageId = req.body.badgePageId;
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true })
+
+                    })
+
+                }
+
+            })
+        }
+
+    });
+
+    app.get('/badge', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            Badge.find({
+                $or: [{ owner: req.user._id }, { status: 'Public' }]
+            }, function(err, badges) {
+                for (var i = 0; i < badges.length; i++) {
+                    var badge = badges[i]
+                    if (badge.owner == req.user._id) {
+                        badge.readonly = "readwrite"
+                    } else {
+                        badge.readonly = "readonly"
+                    }
+                }
+                res.send(badges)
+            })
+    })
+    app.delete('/badge/:id', function(req, res) {
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        Badge.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send(doc);
+            })
+    });
+    app.get('/inventory', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+        } else
+            InventoryItem.find({
+                $or: [{ owner: req.user._id }, { status: 'Public' }]
+            }, function(err, inventorys) {
+                for (var i = 0; i < inventorys.length; i++) {
+                    var inventory = inventorys[i]
+                    if (inventory.owner == req.user._id) {
+                        inventory.readonly = "readwrite"
+                    } else {
+                        inventory.readonly = "readonly"
+                    }
+                }
+                res.send(inventorys)
+            })
+    })
+    app.delete('/inventory/:id', function(req, res) {
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        InventoryItem.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send(doc);
+            })
+    });
+    app.post('/inventory', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        var inventory = new InventoryItem()
+        inventory.label = req.body.label;
+        inventory.itemText = req.body.itemText;
+        inventory.owner = req.user._id
+        inventory.status = req.body.status;
+        inventory.itemPageId = req.body.itemPageId;
+        inventory.itemDocPageId = req.body.itemDocPageId;
+
+        if (!req.body.itemId) {
+            inventory.save(function(err) {
+                if (err) {
+                    console.log(err)
+                    res.send({ success: false })
+                } else res.send({ success: true })
+            })
+        }
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            InventoryItem.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, Badge with id " + req.body.itemId + " does not exists")
+                } else {
+                    console.log("Updating badge " + req.body.itemId)
+                    toUpdate.label = req.body.label;
+                    toUpdate.itemText = req.body.itemText;
+                    toUpdate.owner = req.user._id
+                    toUpdate.status = req.body.status;
+                    toUpdate.itemPageId = req.body.itemPageId;
+                    toUpdate.itemDocPageId = req.body.itemDocPageId;
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true })
+
+                    })
+
+                }
+
+            })
+        }
+
+    });
+
 
 
     app.get('/staticmedia', function(req, res) {
@@ -470,6 +627,17 @@ module.exports = function(app, gfs) {
             return;
         }
         switchStatus(MCQ, req, res);
+
+    })
+    app.put('/badge/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(badge, req, res);
 
     })
 

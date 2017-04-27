@@ -19,7 +19,7 @@ var configDB = require('./config/database.js');
 Grid.mongo = mongoose.mongo;
 // configuration ===============================================================
 mongoose.connect(configDB[0].url); // connect to our database
-require('./config/passport')(passport); // pass passport for configuration
+require('./config/passport.js')(passport); // pass passport for configuration
 
 app.use(morgan('dev')); // log every request to the console
 app.use(cookieParser()); // read cookies (needed for auth)
