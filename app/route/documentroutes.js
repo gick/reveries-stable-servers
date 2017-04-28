@@ -442,6 +442,9 @@ module.exports = function(app, gfs) {
         mlg.label = req.body.label
         mlg.staticMedia = req.body.mediaId
         mlg.unitGames = req.body.unitGameId.split(',')
+        if(req.body.badgeId){
+            mlg.badges=req.body.badgeId.split(',')
+        }
         mlg.save(function(err) {
             if (err) {
                 console.log(err)

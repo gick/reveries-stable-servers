@@ -13,7 +13,8 @@ var mlg = mongoose.Schema({
 
     label: String,
     staticMedia: String,
-    unitGames:[]
+    unitGames:[],
+    badges:[],
 });
 
 module.exports = mongoose.model('MLG', mlg);
