@@ -501,6 +501,7 @@ module.exports = function(app, gfs) {
             var poiGuidFolia
             var poiGuidMap
             var poiGuidClue
+            var poiReachedInventory
 
             var poiGPSValidation
             var poiQRValidation
@@ -519,6 +520,9 @@ module.exports = function(app, gfs) {
             }
             if (req.body.poiReachedMessage) {
                 poiReachedMessage = req.body.poiReachedMessage
+            }
+            if(req.body.poiReachedInventory){
+                poiReachedInventory=req.body.poiReachedInventory
             }
 
             if (req.body.QR) {
@@ -562,6 +566,7 @@ module.exports = function(app, gfs) {
             var game = new Game();
             game.poiIncorrectMessage = poiIncorrectMessage
             game.poiReachedMessage = poiReachedMessage
+            game.poiReachedInventory=poiReachedInventory
             game.poiGPSValidation = poiGPSValidation
             game.poiQRValidation = poiQRValidation
             game.poiGuidMap = poiGuidMap
