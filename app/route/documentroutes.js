@@ -441,6 +441,9 @@ module.exports = function(app, gfs) {
 
         mlg.label = req.body.label
         mlg.staticMedia = req.body.mediaId
+        mlg.gameDifficulty=req.body.gameDifficulty
+        mlg.gameDuration=req.body.gameDuration
+        mlg.gameProximity=req.body.gameProximity
         mlg.unitGames = req.body.unitGameId.split(',')
         if(req.body.badgeId){
             mlg.badges=req.body.badgeId.split(',')
@@ -457,7 +460,13 @@ module.exports = function(app, gfs) {
 
     })
 
+//return a given game by id
+    app.get('/unitGame/:id', function(req, res) {
+        Game.find({ '_id': req.params.id, }, function(err, game) {
+            res.send(game);
+        })
 
+    })
 
 
     // Return the list of freeTextActivities owned by current user
