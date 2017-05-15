@@ -631,6 +631,18 @@ module.exports = function(app, gfs) {
         switchStatus(FreeText, req, res);
 
     })
+    app.put('/inventory/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(InventoryItem, req, res);
+
+    })
+
 
 
     //Put operation allow to chhane the metadata
