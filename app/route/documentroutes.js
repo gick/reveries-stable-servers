@@ -441,6 +441,9 @@ module.exports = function(app, gfs) {
 
         mlg.label = req.body.label
         mlg.staticMedia = req.body.mediaId
+        mlg.gameDifficulty=req.body.gameDifficulty
+        mlg.gameDuration=req.body.gameDuration
+        mlg.gameProximity=req.body.gameProximity
         mlg.unitGames = req.body.unitGameId.split(',')
         if(req.body.badgeId){
             mlg.badgeId=req.body.badgeId
@@ -457,7 +460,13 @@ module.exports = function(app, gfs) {
 
     })
 
+//return a given game by id
+    app.get('/unitGame/:id', function(req, res) {
+        Game.find({ '_id': req.params.id, }, function(err, game) {
+            res.send(game);
+        })
 
+    })
 
 
     // Return the list of freeTextActivities owned by current user
@@ -622,6 +631,18 @@ module.exports = function(app, gfs) {
         switchStatus(FreeText, req, res);
 
     })
+    app.put('/inventory/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(InventoryItem, req, res);
+
+    })
+
 
 
     //Put operation allow to chhane the metadata

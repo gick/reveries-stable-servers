@@ -15,6 +15,9 @@ var mlg = mongoose.Schema({
     staticMedia: String,
     unitGames:[],
     badgeId:String,
+    gameDifficulty:String,
+    gameDuration:String,
+    gameProximity:String,
 });
 
 module.exports = mongoose.model('MLG', mlg);
