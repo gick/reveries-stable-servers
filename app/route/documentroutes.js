@@ -446,7 +446,7 @@ module.exports = function(app, gfs) {
         mlg.gameProximity=req.body.gameProximity
         mlg.unitGames = req.body.unitGameId.split(',')
         if(req.body.badgeId){
-            mlg.badges=req.body.badgeId.split(',')
+            mlg.badgeId=req.body.badgeId
         }
         mlg.save(function(err) {
             if (err) {
