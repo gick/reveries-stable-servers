@@ -443,7 +443,7 @@ module.exports = function(app, gfs) {
         mlg.staticMedia = req.body.mediaId
         mlg.unitGames = req.body.unitGameId.split(',')
         if(req.body.badgeId){
-            mlg.badges=req.body.badgeId.split(',')
+            mlg.badgeId=req.body.badgeId
         }
         mlg.save(function(err) {
             if (err) {
