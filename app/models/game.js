@@ -22,6 +22,7 @@ var gameSchema = mongoose.Schema({
     cluePOIId:String,
     poiGuidFolia:Boolean,
     poiGuidMap:Boolean,
+		poiGuidType:String,
     poiGuidClue:Boolean,
     poiGPSValidation:Boolean,
     poiQRValidation:Boolean,
