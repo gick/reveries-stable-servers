@@ -441,12 +441,16 @@ module.exports = function(app, gfs) {
 
         mlg.label = req.body.label
         mlg.staticMedia = req.body.mediaId
-        mlg.gameDifficulty=req.body.gameDifficulty
-        mlg.gameDuration=req.body.gameDuration
-        mlg.gameProximity=req.body.gameProximity
+        if (req.body.multi && req.body.multi === 'on') {
+            mlg.isCompetition = true
+            mlg.playerNbr = req.body.playerNbr
+        }
+        mlg.gameDifficulty = req.body.gameDifficulty
+        mlg.gameDuration = req.body.gameDuration
+        mlg.gameProximity = req.body.gameProximity
         mlg.unitGames = req.body.unitGameId.split(',')
-        if(req.body.badgeId){
-            mlg.badgeId=req.body.badgeId
+        if (req.body.badgeId) {
+            mlg.badgeId = req.body.badgeId
         }
         mlg.save(function(err) {
             if (err) {
@@ -460,7 +464,7 @@ module.exports = function(app, gfs) {
 
     })
 
-//return a given game by id
+    //return a given game by id
     app.get('/unitGame/:id', function(req, res) {
         Game.find({ '_id': req.params.id, }, function(err, game) {
             res.send(game);
@@ -533,8 +537,8 @@ module.exports = function(app, gfs) {
             if (req.body.poiReachedMessage) {
                 poiReachedMessage = req.body.poiReachedMessage
             }
-            if(req.body.poiReachedInventory){
-                poiReachedInventory=req.body.poiReachedInventory
+            if (req.body.poiReachedInventory) {
+                poiReachedInventory = req.body.poiReachedInventory
             }
 
             if (req.body.QR) {
@@ -585,7 +589,7 @@ module.exports = function(app, gfs) {
             var game = new Game();
             game.poiIncorrectMessage = poiIncorrectMessage
             game.poiReachedMessage = poiReachedMessage
-            game.poiReachedInventory=poiReachedInventory
+            game.poiReachedInventory = poiReachedInventory
             game.poiGPSValidation = poiGPSValidation
             game.poiQRValidation = poiQRValidation
             game.poiGuidMap = poiGuidMap
