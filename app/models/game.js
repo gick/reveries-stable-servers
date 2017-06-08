@@ -29,6 +29,12 @@ var gameSchema = mongoose.Schema({
     poiIncorrectMessage:String,
     poiReachedMessage:String,
     poiReachedInventory:String,
+    activity1Success:String,
+    activity1Fail:String,
+    activity2Success:String,
+    activity2Fail:String,
+    activity3Success:String,
+    activity3Fail:String,
 
 });
 

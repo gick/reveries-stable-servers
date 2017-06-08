@@ -504,7 +504,7 @@ module.exports = function(app, gfs) {
     //from the game server
 
     app.post('/unitGame', function(req, res) {
-	console.log(req.body)
+            console.log(req.body)
             var activityName = req.body.activityName;
             var startMediaId = null
             var POIId = null
@@ -513,7 +513,7 @@ module.exports = function(app, gfs) {
 
             var poiPAId
             var poiGuidFolia
-			var poiGuidType
+            var poiGuidType
             var poiGuidMap
             var poiGuidClue
             var poiReachedInventory
@@ -524,6 +524,12 @@ module.exports = function(app, gfs) {
             var poiIncorrectMessage
             var poiReachedMessage
             var cluePOIId
+            var activity1Success
+            var activity1Fail
+            var activity2Success
+            var activity2Fail
+            var activity3Success
+            var activity3Fail
 
             var situatedAct1;
             var situatedAct2;
@@ -531,6 +537,25 @@ module.exports = function(app, gfs) {
             if (req.body.gps) {
                 poiGPSValidation = true
             }
+            if (req.body.act1success) {
+                activity1Success = req.body.act1success
+            }
+            if (req.body.act1fail) {
+                activity1Fail = req.body.act1fail
+            }
+            if (req.body.act2success) {
+                activity2Success = req.body.act2success
+            }
+            if (req.body.act2fail) {
+                activity2Fail = req.body.act2fail
+            }
+            if (req.body.act3success) {
+                activity3Success = req.body.act3success
+            }
+            if (req.body.act3fail) {
+                activity3Fail = req.body.act3fail
+            }
+
             if (req.body.poiIncorrectMessage) {
                 poiIncorrectMessage = req.body.poiIncorrectMessage
             }
@@ -547,13 +572,13 @@ module.exports = function(app, gfs) {
 
             if (req.body.map || req.body.compass || req.body.ping) {
                 poiGuidMap = true
-				if (req.body.map) {
-					poiGuidType = "map"
-				} else if (req.body.compass) {
-					poiGuidType = "compass"
-				} else if (req.body.ping) {
-					poiGuidType = "ping"
-				}
+                if (req.body.map) {
+                    poiGuidType = "map"
+                } else if (req.body.compass) {
+                    poiGuidType = "compass"
+                } else if (req.body.ping) {
+                    poiGuidType = "ping"
+                }
             }
             if (req.body.folia) {
                 poiGuidFolia = true
@@ -587,6 +612,13 @@ module.exports = function(app, gfs) {
 
 
             var game = new Game();
+            game.activity1Success = activity1Success
+            game.activity1Fail = activity1Fail
+            game.activity2Success = activity2Success
+            game.activity2Fail = activity2Fail
+            game.activity3Success = activity3Success
+            game.activity3Fail = activity3Fail
+
             game.poiIncorrectMessage = poiIncorrectMessage
             game.poiReachedMessage = poiReachedMessage
             game.poiReachedInventory = poiReachedInventory
@@ -599,7 +631,7 @@ module.exports = function(app, gfs) {
             game.startMediaId = startMediaId;
             game.feedbackMediaId = feedbackMediaId;
             game.POIId = POIId
-			game.poiGuidType = poiGuidType
+            game.poiGuidType = poiGuidType
             game.poiPAId = poiPAId
             game.cluePOIId = cluePOIId
             game.activities = [];
