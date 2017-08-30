@@ -225,10 +225,12 @@ module.exports = function(app, passport, gfs) {
             }).toArray(function(err, files) {
                 for (var i = 0; i < files.length; i++) {
                     var filedata = files[i]
+                    filedata.label=filedata.filename
+                    filedata.status=filedata.metadata.status
                     if (filedata.metadata.owner && filedata.metadata.owner.toString() == req.user._id.toString()) {
-                        filedata.metadata.readonly = "readwrite"
+                        filedata.readonly = "readwrite"
                     } else {
-                        filedata.metadata.readonly = "readonly"
+                        filedata.readonly = "readonly"
                     }
                 }
 

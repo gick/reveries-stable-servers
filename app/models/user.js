@@ -16,6 +16,7 @@ var userSchema = mongoose.Schema({
     email: String,
     password: String,
     isadmin: Boolean,
+    type:{type:String,default:'user'},
     scores:[],
     badges:[],
 

@@ -5,6 +5,7 @@ var inventoryItemSchema = mongoose.Schema({ label:String,
 	itemText:String,
 	readonly:String,
 	owner:String,
+	type:{type:String,default:'inventory'},
 	status:String,
 	itemPageId: String, 
 	itemDocPageId: String, })

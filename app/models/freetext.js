@@ -8,6 +8,7 @@ var freeTextSchema = mongoose.Schema({ label:String,
 	question: String, 
 	response: String, 
 	mediaId: String, 
+	type:{type:String,default:'freetext'},
 	wrongMessage: String, 
 	correctMessage: String })
 

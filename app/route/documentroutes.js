@@ -713,7 +713,7 @@ module.exports = function(app, gfs) {
             });
             return;
         }
-        switchStatus(badge, req, res);
+        switchStatus(Badge, req, res);
 
     })
 

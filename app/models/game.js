@@ -35,6 +35,7 @@ var gameSchema = mongoose.Schema({
     activity2Fail:String,
     activity3Success:String,
     activity3Fail:String,
+    type:{type:String,default:'unitgame'},
 
 });
 

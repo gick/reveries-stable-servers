@@ -4,6 +4,7 @@ var qrCodeSchema = mongoose.Schema({
 		owner:String,
 		status:String,
         qrcode:String,
+	type:{type:String,default:'qrcode'},
         fileId:String
     })
 

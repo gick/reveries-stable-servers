@@ -10,6 +10,7 @@ var mcqSchema = mongoose.Schema({
         distractor2: String,
         response: String,
         mediaId: String,
+    type:{type:String,default:'mcq'},
         correctMessage: String,
         wrongMessage: String
     })
