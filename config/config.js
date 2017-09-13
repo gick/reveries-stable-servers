@@ -1,2 +1,2 @@
-var webDirectory='/home/gicquel/Dev/reveries-authoring-client/'
+var webDirectory='/home/test/Dev/reveries-authoring-client/'
 module.exports=webDirectory
