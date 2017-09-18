@@ -59,7 +59,7 @@ module.exports = function(app, passport, gfs) {
                 metadata: {
                     owner: req.user._id.toString(),
                     status: 'Private',
-                    title: part.file.name
+                    title: part.file.name,
 
                 }
             });
@@ -123,9 +123,8 @@ module.exports = function(app, passport, gfs) {
                     success: false
                 });
             } else {
-                res.send({
-                    success: true
-                })
+                res.send({success:true,resource:file,operation:'delete'});
+
             }
 
         });
@@ -225,8 +224,9 @@ module.exports = function(app, passport, gfs) {
             }).toArray(function(err, files) {
                 for (var i = 0; i < files.length; i++) {
                     var filedata = files[i]
-                    filedata.label=filedata.filename
-                    filedata.status=filedata.metadata.status
+                    filedata.typeLabel = 'Image'
+                    filedata.label = filedata.filename
+                    filedata.status = filedata.metadata.status
                     if (filedata.metadata.owner && filedata.metadata.owner.toString() == req.user._id.toString()) {
                         filedata.readonly = "readwrite"
                     } else {

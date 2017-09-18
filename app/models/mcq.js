@@ -11,6 +11,8 @@ var mcqSchema = mongoose.Schema({
         response: String,
         mediaId: String,
     type:{type:String,default:'mcq'},
+    typeLabel: { type: String, default: 'Multiple choice question' },
+
         correctMessage: String,
         wrongMessage: String
     })

@@ -6,6 +6,8 @@ var inventoryItemSchema = mongoose.Schema({ label:String,
 	readonly:String,
 	owner:String,
 	type:{type:String,default:'inventory'},
+    typeLabel: { type: String, default: 'Inventory item' },
+
 	status:String,
 	itemPageId: String, 
 	itemDocPageId: String, })

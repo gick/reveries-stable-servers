@@ -6,6 +6,8 @@ var badgeSchema = mongoose.Schema({ label:String,
 	owner:String,
 	status:String,
 	type:{type:String,default:'badge'},
+    typeLabel: { type: String, default: 'Badge' },
+
 	badgePageId: String, 
 	mediaId: String, })
 

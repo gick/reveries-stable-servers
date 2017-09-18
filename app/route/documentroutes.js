@@ -33,7 +33,7 @@ module.exports = function(app, gfs) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true })
+                } else res.send({ success: true,resource:staticmedia,operation:'create' })
             })
         }
         if (req.body.itemId && req.body.itemId.length > 0) {
@@ -50,7 +50,7 @@ module.exports = function(app, gfs) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true })
+                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
 
                     })
 
@@ -82,7 +82,7 @@ module.exports = function(app, gfs) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true })
+                } else res.send({ success: true,resource:badge,operation:'create' })
             })
         }
         if (req.body.itemId && req.body.itemId.length > 0) {
@@ -102,7 +102,7 @@ module.exports = function(app, gfs) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true })
+                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
 
                     })
 
@@ -135,7 +135,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         Badge.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send(doc);
+                res.send({success:true,resource:doc,operation:'delete'});
             })
     });
     app.get('/inventory', function(req, res) {
@@ -160,7 +160,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         InventoryItem.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send(doc);
+                res.send({success:true,resource:doc,operation:'delete'});
             })
     });
     app.post('/inventory', function(req, res) {
@@ -184,7 +184,7 @@ module.exports = function(app, gfs) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true })
+                } else res.send({ success: true,resource:inventory,operation:'create' })
             })
         }
         if (req.body.itemId && req.body.itemId.length > 0) {
@@ -203,7 +203,7 @@ module.exports = function(app, gfs) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true })
+                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
 
                     })
 
@@ -252,7 +252,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         StaticMedia.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send(doc);
+                res.send({success:true,resource:doc,operation:'delete'});
             })
     });
 
@@ -275,13 +275,14 @@ module.exports = function(app, gfs) {
         newFreeText.mediaId = req.body.mediaId;
         newFreeText.owner = req.user._id
         newFreeText.status = req.body.status;
+        newFreeText.responseLabel = req.body.responseLabel;
 
         if (!req.body.itemId) {
             newFreeText.save(function(err) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true })
+                } else res.send({ success: true,resource:newFreeText,operation:'create' })
             })
         }
 
@@ -303,7 +304,7 @@ module.exports = function(app, gfs) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true })
+                        } else res.send({ success: true,resource:toUpdate,operation:'update'  })
 
                     })
 
@@ -340,7 +341,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         FreeText.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send(doc);
+                res.send({success:true,resource:doc,operation:'delete'});
             })
     });
 
@@ -370,7 +371,7 @@ module.exports = function(app, gfs) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true })
+                } else res.send({ success: true,resource:Mcq,operation:'create' })
 
             })
         }
@@ -395,7 +396,7 @@ module.exports = function(app, gfs) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true })
+                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
 
                     })
 
@@ -431,7 +432,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         MCQ.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send(doc);
+                res.send({success:true,resource:doc,operation:'delete'});
             })
 
     })
@@ -458,7 +459,7 @@ module.exports = function(app, gfs) {
                 return 500;
             }
 
-            res.send({ success: 'ok' })
+            res.send({success:true,resource:mlg,operation:'create'})
         });
 
 
@@ -487,14 +488,11 @@ module.exports = function(app, gfs) {
     // Self explaining
     app.delete('/unitGame/:id', function(req, res) {
         var callback = function(err, numberAffected) {
-            if (err) {
+            if (err,doc) {
                 res.send({
                     success: false
                 })
-            } else res.send({
-                success: true,
-                number: numberAffected
-            });
+            } else res.send({success:true,resource:doc,operation:'delete'});
         };
         Game.find({ _id: req.params.id }).remove(callback)
     })
@@ -656,7 +654,7 @@ module.exports = function(app, gfs) {
                     return 500;
                 }
 
-                res.send(game)
+                res.send({success:true,resource:game,operation:'create'})
             });
 
         })

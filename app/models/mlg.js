@@ -17,6 +17,8 @@ var mlg = mongoose.Schema({
     staticMedia: String,
     unitGames: [],
     type:{type:String,default:'mlg'},
+    typeLabel: { type: String, default: 'Mobile learning game' },
+
     badgeId: String,
     gameDifficulty: String,
     gameDuration: String,
