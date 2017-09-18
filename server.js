@@ -4,6 +4,10 @@
 // get all the tools we need
 var express  = require('express');
 var app      = express();
+var HTTPS_PORT = 443;
+var https = require('https')
+var fs=require('fs')
+
 var port     = process.env.PORT || 8000;
 var mongoose = require('mongoose');
 var passport = require('passport');
@@ -44,5 +48,11 @@ require('./app/route/documentroutes.js')(app,gfs);
 //require('./app/route/imageAnalysisRoute.js')(app, gfs,passport); 
 
 // launch ======================================================================
-app.listen(port);
-console.log('Reveries server started on localhostkey: "value", ' + port);
+var secureServer = https.createServer({
+    key: fs.readFileSync('/etc/letsencrypt/live/conception.reveries-project.fr/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/conception.reveries-project.fr/cert.pem')
+  }, app)
+  .listen(HTTPS_PORT, function () {
+    console.log('Secure Server listening on port ' + HTTPS_PORT);
+});
+
