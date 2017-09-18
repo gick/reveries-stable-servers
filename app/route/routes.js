@@ -1,9 +1,8 @@
-module.exports = function(app, passport) {
+module.exports = function(app, passport,webdir) {
 
     // normal routes ===============================================================
     var express = require('express');
     var User = require('../models/user.js');
-    var webdir = require('../../config/config.js')
     app.use(express.static(webdir));
 
 
