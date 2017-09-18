@@ -20,6 +20,7 @@ var bodyParser   = require('body-parser');
 var session      = require('express-session');
 var busboyBodyParser = require('busboy-body-parser');
 var configDB = require('./config/database.js');
+var webdir = require('./config/config.js');
 Grid.mongo = mongoose.mongo;
 // configuration ===============================================================
 mongoose.connect(configDB[0].url); // connect to our database
@@ -42,7 +43,7 @@ var gfs = new Grid(mongoose.connection.db);
 
 
 // routes ======================================================================
-require('./app/route/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
+require('./app/route/routes.js')(app, passport,webdir); // load our routes and pass in our app and fully configured passport
 require('./app/route/filesroutes.js')(app, passport,gfs);
 require('./app/route/documentroutes.js')(app,gfs);
 //require('./app/route/imageAnalysisRoute.js')(app, gfs,passport); 
