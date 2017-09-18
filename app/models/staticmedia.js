@@ -5,6 +5,7 @@ var staticmediaSchema = mongoose.Schema({
 		readonly:String,
 		owner:String,
 	type:{type:String,default:'staticmedia'},
+	typeLabel:{type:String,default:'Multimedia document'},
 		status:String,
         mkdown: String,
     })

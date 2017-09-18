@@ -5,10 +5,13 @@ var freeTextSchema = mongoose.Schema({ label:String,
 	owner:String,
 	status:String,
 	label: String,
+	responseLabel:String,
 	question: String, 
 	response: String, 
 	mediaId: String, 
 	type:{type:String,default:'freetext'},
+    typeLabel: { type: String, default: 'Free text question' },
+
 	wrongMessage: String, 
 	correctMessage: String })
 
