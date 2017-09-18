@@ -60,7 +60,7 @@ module.exports = function(app, passport, gfs) {
                     owner: req.user._id.toString(),
                     status: 'Private',
                     title: part.file.name,
-
+                    typeLabel:'Image',
                 }
             });
             writestream.write(part.file.data);
@@ -117,17 +117,25 @@ module.exports = function(app, passport, gfs) {
         var options = {
             _id: req.params.id
         };
-        gfs.remove(options, function(err, file) {
-            if (err) {
-                res.send({
-                    success: false
+
+        gfs.findOne(options, function(err, found) {
+            if (found) {
+                gfs.remove(options, function(err) {
+                    if (err) {
+                        res.send({
+                            success: false
+                        });
+                    } else {
+                        res.send({ success: true, resource: found.metadata, operation: 'delete' });
+
+                    }
+
                 });
-            } else {
-                res.send({success:true,resource:file,operation:'delete'});
+
 
             }
-
         });
+
 
     });
 
