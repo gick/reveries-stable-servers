@@ -33,7 +33,7 @@ module.exports = function(app, gfs) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true,resource:staticmedia,operation:'create' })
+                } else res.send({ success: true, resource: staticmedia, operation: 'create' })
             })
         }
         if (req.body.itemId && req.body.itemId.length > 0) {
@@ -50,7 +50,7 @@ module.exports = function(app, gfs) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
 
                     })
 
@@ -75,14 +75,14 @@ module.exports = function(app, gfs) {
         badge.badgeText = req.body.badgeText;
         badge.owner = req.user._id
         badge.status = req.body.status;
-        badge.badgePageId = req.body.badgePageId;
+        badge.media = req.body.badgePageId;
 
         if (!req.body.itemId) {
             badge.save(function(err) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true,resource:badge,operation:'create' })
+                } else res.send({ success: true, resource: badge, operation: 'create' })
             })
         }
         if (req.body.itemId && req.body.itemId.length > 0) {
@@ -96,13 +96,12 @@ module.exports = function(app, gfs) {
 
                     toUpdate.owner = req.user._id
                     toUpdate.status = req.body.status;
-                    toUpdate.mediaId = req.body.mediaId;
-                    toUpdate.badgePageId = req.body.badgePageId;
+                    toUpdate.media = req.body.badgePageId;
                     toUpdate.save(function(err) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
 
                     })
 
@@ -119,7 +118,9 @@ module.exports = function(app, gfs) {
         } else
             Badge.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
-            }, function(err, badges) {
+            })
+            .populate('media')
+            .exec(function(err, badges) {
                 for (var i = 0; i < badges.length; i++) {
                     var badge = badges[i]
                     if (badge.owner == req.user._id) {
@@ -135,7 +136,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         Badge.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send({success:true,resource:doc,operation:'delete'});
+                res.send({ success: true, resource: doc, operation: 'delete' });
             })
     });
     app.get('/inventory', function(req, res) {
@@ -144,7 +145,10 @@ module.exports = function(app, gfs) {
         } else
             InventoryItem.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
-            }, function(err, inventorys) {
+            })
+            .populate('media')
+            .populate('inventoryDoc')
+            .exec(function(err, inventorys) {
                 for (var i = 0; i < inventorys.length; i++) {
                     var inventory = inventorys[i]
                     if (inventory.owner == req.user._id) {
@@ -156,11 +160,24 @@ module.exports = function(app, gfs) {
                 res.send(inventorys)
             })
     })
+
+    app.get('/inventory/:id', function(req, res) {
+        InventoryItem.findOne({
+                '_id': req.params.id
+            })
+            .populate('media')
+            .populate('inventoryDoc')
+
+            .exec(function(err, item) {
+                res.send(item)
+            })
+    })
+
     app.delete('/inventory/:id', function(req, res) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         InventoryItem.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send({success:true,resource:doc,operation:'delete'});
+                res.send({ success: true, resource: doc, operation: 'delete' });
             })
     });
     app.post('/inventory', function(req, res) {
@@ -176,15 +193,15 @@ module.exports = function(app, gfs) {
         inventory.itemText = req.body.itemText;
         inventory.owner = req.user._id
         inventory.status = req.body.status;
-        inventory.itemPageId = req.body.itemPageId;
-        inventory.itemDocPageId = req.body.itemDocPageId;
+        inventory.media = req.body.itemPageId;
+        inventory.inventoryDoc = req.body.itemDocPageId;
 
         if (!req.body.itemId) {
             inventory.save(function(err) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true,resource:inventory,operation:'create' })
+                } else res.send({ success: true, resource: inventory, operation: 'create' })
             })
         }
         if (req.body.itemId && req.body.itemId.length > 0) {
@@ -197,13 +214,13 @@ module.exports = function(app, gfs) {
                     toUpdate.itemText = req.body.itemText;
                     toUpdate.owner = req.user._id
                     toUpdate.status = req.body.status;
-                    toUpdate.itemPageId = req.body.itemPageId;
-                    toUpdate.itemDocPageId = req.body.itemDocPageId;
+                    toUpdate.media = req.body.itemPageId;
+                    toUpdate.inventoryDoc = req.body.itemDocPageId;
                     toUpdate.save(function(err) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
 
                     })
 
@@ -252,7 +269,7 @@ module.exports = function(app, gfs) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         StaticMedia.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send({success:true,resource:doc,operation:'delete'});
+                res.send({ success: true, resource: doc, operation: 'delete' });
             })
     });
 
@@ -272,7 +289,7 @@ module.exports = function(app, gfs) {
         newFreeText.response = req.body.response;
         newFreeText.wrongMessage = req.body.wrongMessage;
         newFreeText.correctMessage = req.body.correctMessage;
-        newFreeText.mediaId = req.body.mediaId;
+        newFreeText.media = req.body.mediaId;
         newFreeText.owner = req.user._id
         newFreeText.status = req.body.status;
         newFreeText.responseLabel = req.body.responseLabel;
@@ -282,7 +299,7 @@ module.exports = function(app, gfs) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true,resource:newFreeText,operation:'create' })
+                } else res.send({ success: true, resource: newFreeText, operation: 'create' })
             })
         }
 
@@ -297,14 +314,14 @@ module.exports = function(app, gfs) {
                     toUpdate.response = req.body.response;
                     toUpdate.wrongMessage = req.body.wrongMessage;
                     toUpdate.correctMessage = req.body.correctMessage;
-                    toUpdate.mediaId = req.body.mediaId;
+                    toUpdate.media = req.body.mediaId;
                     toUpdate.owner = req.user._id
                     toUpdate.status = req.body.status;
                     toUpdate.save(function(err) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true,resource:toUpdate,operation:'update'  })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
 
                     })
 
@@ -323,7 +340,9 @@ module.exports = function(app, gfs) {
         } else
             FreeText.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
-            }, function(err, freetexts) {
+            })
+            .populate('media')
+            .exec(function(err, freetexts) {
                 for (var i = 0; i < freetexts.length; i++) {
                     var freetext = freetexts[i]
                     if (freetext.owner == req.user._id) {
@@ -337,11 +356,19 @@ module.exports = function(app, gfs) {
             })
     })
 
+
+    app.get('/freetext/:id', function(req, res) {
+
+        FreeText.findOne({ '_id': req.params.id }, function(err, freetext) {
+            res.send(freetext)
+        })
+    })
+
     app.delete('/freetextactivity/:id', function(req, res) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         FreeText.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send({success:true,resource:doc,operation:'delete'});
+                res.send({ success: true, resource: doc, operation: 'delete' });
             })
     });
 
@@ -364,14 +391,14 @@ module.exports = function(app, gfs) {
         Mcq.response = req.body.response;
         Mcq.wrongMessage = req.body.wrongMessage;
         Mcq.correctMessage = req.body.correctMessage;
-        Mcq.mediaId = req.body.mediaId;
+        Mcq.media = req.body.mediaId;
         //save if no mediaId
         if (!req.body.itemId) {
             Mcq.save(function(err) {
                 if (err) {
                     console.log(err)
                     res.send({ success: false })
-                } else res.send({ success: true,resource:Mcq,operation:'create' })
+                } else res.send({ success: true, resource: Mcq, operation: 'create' })
 
             })
         }
@@ -391,12 +418,12 @@ module.exports = function(app, gfs) {
                     toUpdate.response = req.body.response;
                     toUpdate.wrongMessage = req.body.wrongMessage;
                     toUpdate.correctMessage = req.body.correctMessage;
-                    toUpdate.mediaId = req.body.mediaId;
+                    toUpdate.media = req.body.mediaId;
                     toUpdate.save(function(err) {
                         if (err) {
                             console.log(err)
                             res.send({ success: false })
-                        } else res.send({ success: true,resource:toUpdate,operation:'update' })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
 
                     })
 
@@ -414,7 +441,9 @@ module.exports = function(app, gfs) {
         } else
             MCQ.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
-            }, function(err, mcqs) {
+            })
+            .populate('media')
+            .exec(function(err, mcqs) {
                 for (var i = 0; i < mcqs.length; i++) {
                     var mcq = mcqs[i]
                     if (mcq.owner == req.user._id) {
@@ -428,11 +457,22 @@ module.exports = function(app, gfs) {
 
     });
 
+
+    app.get('/mcq/:id', function(req, res) {
+        MCQ.findOne({ '_id': req.params.id, })
+            .populate('media')
+            .exec(function(err, mcq) {
+                res.send(mcq);
+            })
+
+
+    });
+
     app.delete('/mcq/:id', function(req, res) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         MCQ.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send({success:true,resource:doc,operation:'delete'});
+                res.send({ success: true, resource: doc, operation: 'delete' });
             })
 
     })
@@ -459,7 +499,7 @@ module.exports = function(app, gfs) {
                 return 500;
             }
 
-            res.send({success:true,resource:mlg,operation:'create'})
+            res.send({ success: true, resource: mlg, operation: 'create' })
         });
 
 
@@ -467,9 +507,15 @@ module.exports = function(app, gfs) {
 
     //return a given game by id
     app.get('/unitGame/:id', function(req, res) {
-        Game.find({ '_id': req.params.id, }, function(err, game) {
+        Game.find({ '_id': req.params.id, })        
+        .populate('startMedia')
+        .populate('feedbackMedia')
+        .populate('POI')
+        .populate('inventoryItem')
+        .exec(function(err, game) {
             res.send(game);
         })
+
 
     })
 
@@ -479,7 +525,12 @@ module.exports = function(app, gfs) {
 
     //Return the list of Game (user independant)
     app.get('/unitGame', function(req, res) {
-        Game.find({}, function(err, game) {
+        Game.find({})
+        .populate('startMedia')
+        .populate('feedbackMedia')
+        .populate('POI')
+        .populate('inventoryItem')
+        .exec(function(err, game) {
             res.send(game);
         })
 
@@ -487,14 +538,12 @@ module.exports = function(app, gfs) {
 
     // Self explaining
     app.delete('/unitGame/:id', function(req, res) {
-        var callback = function(err, numberAffected) {
-            if (err,doc) {
-                res.send({
-                    success: false
-                })
-            } else res.send({success:true,resource:doc,operation:'delete'});
-        };
-        Game.find({ _id: req.params.id }).remove(callback)
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        Game.findOneAndRemove({ '_id': req.params.id },
+            function(err, doc) {
+                res.send({ success: true, resource: doc, operation: 'delete' });
+            })
+
     })
 
     //Handle reception of a whole game unit, quite a lot of parameters
@@ -502,163 +551,162 @@ module.exports = function(app, gfs) {
     //from the game server
 
     app.post('/unitGame', function(req, res) {
-            console.log(req.body)
-            var activityName = req.body.activityName;
-            var startMediaId = null
-            var POIId = null
-            var activitiesArray
-            var feedbackMediaId
+        var activityName = req.body.activityName;
+        var startMedia = null
+        var poi = null
+        var activitiesArray
+        var feedbackMedia
 
-            var poiPAId
-            var poiGuidFolia
-            var poiGuidType
-            var poiGuidMap
-            var poiGuidClue
-            var poiReachedInventory
-
-
-            var poiGPSValidation
-            var poiQRValidation
-            var poiIncorrectMessage
-            var poiReachedMessage
-            var cluePOIId
-            var activity1Success
-            var activity1Fail
-            var activity2Success
-            var activity2Fail
-            var activity3Success
-            var activity3Fail
-
-            var situatedAct1;
-            var situatedAct2;
-            var situatedAct3;
-            if (req.body.gps) {
-                poiGPSValidation = true
-            }
-            if (req.body.act1success) {
-                activity1Success = req.body.act1success
-            }
-            if (req.body.act1fail) {
-                activity1Fail = req.body.act1fail
-            }
-            if (req.body.act2success) {
-                activity2Success = req.body.act2success
-            }
-            if (req.body.act2fail) {
-                activity2Fail = req.body.act2fail
-            }
-            if (req.body.act3success) {
-                activity3Success = req.body.act3success
-            }
-            if (req.body.act3fail) {
-                activity3Fail = req.body.act3fail
-            }
-
-            if (req.body.poiIncorrectMessage) {
-                poiIncorrectMessage = req.body.poiIncorrectMessage
-            }
-            if (req.body.poiReachedMessage) {
-                poiReachedMessage = req.body.poiReachedMessage
-            }
-            if (req.body.poiReachedInventory) {
-                poiReachedInventory = req.body.poiReachedInventory
-            }
-
-            if (req.body.QR) {
-                poiQRValidation = true
-            }
-
-            if (req.body.map || req.body.compass || req.body.ping) {
-                poiGuidMap = true
-                if (req.body.map) {
-                    poiGuidType = "map"
-                } else if (req.body.compass) {
-                    poiGuidType = "compass"
-                } else if (req.body.ping) {
-                    poiGuidType = "ping"
-                }
-            }
-            if (req.body.folia) {
-                poiGuidFolia = true
-            }
-            if (req.body.cluePoiMedia) {
-                poiGuidClue = true
-            }
-
-            if (req.body.cluePOIId) {
-                cluePOIId = req.body.cluePOIId
-            }
-
-            if (req.body.poiPAId) {
-                poiPAId = req.body.poiPAId
-            }
-            if (req.body.startMedia)
-                startMediaId = req.body.startMedia;
-            if (req.body.feedbackMedia)
-                feedbackMediaId = req.body.feedbackMedia;
-            if (req.body.poi)
-                POIId = req.body.poi;
-            if (req.body.situatedAct1) {
-                situatedAct1 = req.body.situatedAct1
-            }
-            if (req.body.situatedAct2) {
-                situatedAct2 = req.body.situatedAct2
-            }
-            if (req.body.situatedAct3) {
-                situatedAct3 = req.body.situatedAct3
-            }
+        var poiPAId
+        var poiGuidFolia
+        var poiGuidType
+        var poiGuidMap
+        var poiGuidClue
+        var inventoryItem
 
 
-            var game = new Game();
-            game.activity1Success = activity1Success
-            game.activity1Fail = activity1Fail
-            game.activity2Success = activity2Success
-            game.activity2Fail = activity2Fail
-            game.activity3Success = activity3Success
-            game.activity3Fail = activity3Fail
+        var poiGPSValidation
+        var poiQRValidation
+        var poiIncorrectMessage
+        var poiReachedMessage
+        var clueGuidance
+        var activity1Success
+        var activity1Fail
+        var activity2Success
+        var activity2Fail
+        var activity3Success
+        var activity3Fail
 
-            game.poiIncorrectMessage = poiIncorrectMessage
-            game.poiReachedMessage = poiReachedMessage
-            game.poiReachedInventory = poiReachedInventory
-            game.poiGPSValidation = poiGPSValidation
-            game.poiQRValidation = poiQRValidation
-            game.poiGuidMap = poiGuidMap
-            game.poiGuidClue = poiGuidClue
-            game.poiGuidFolia = poiGuidFolia
-            game.activityName = activityName;
-            game.startMediaId = startMediaId;
-            game.feedbackMediaId = feedbackMediaId;
-            game.POIId = POIId
-            game.poiGuidType = poiGuidType
-            game.poiPAId = poiPAId
-            game.cluePOIId = cluePOIId
-            game.activities = [];
-            if (situatedAct1)
-                game.activities.push(situatedAct1)
-            if (situatedAct2)
-                game.activities.push(situatedAct2)
-            if (situatedAct3)
-                game.activities.push(situatedAct3)
-            game.poiScorePA = req.body.poiScorePA
-            game.poiPA = req.body.poiPA;
-            game.act1successScore = req.body.act1successScore
-            game.act1successMed = req.body.act1successMed
-            game.act2successScore = req.body.act2successScore
-            game.act2successMed = req.body.act2successMed
+        var situatedAct1;
+        var situatedAct2;
+        var situatedAct3;
+        if (req.body.gps) {
+            poiGPSValidation = true
+        }
+        if (req.body.act1success) {
+            activity1Success = req.body.act1success
+        }
+        if (req.body.act1fail) {
+            activity1Fail = req.body.act1fail
+        }
+        if (req.body.act2success) {
+            activity2Success = req.body.act2success
+        }
+        if (req.body.act2fail) {
+            activity2Fail = req.body.act2fail
+        }
+        if (req.body.act3success) {
+            activity3Success = req.body.act3success
+        }
+        if (req.body.act3fail) {
+            activity3Fail = req.body.act3fail
+        }
+
+        if (req.body.poiIncorrectMessage) {
+            poiIncorrectMessage = req.body.poiIncorrectMessage
+        }
+        if (req.body.poiReachedMessage) {
+            poiReachedMessage = req.body.poiReachedMessage
+        }
+        if (req.body.inventoryItem) {
+            inventoryItem = req.body.inventoryItem
+        }
+
+        if (req.body.QR) {
+            poiQRValidation = true
+        }
+
+        if (req.body.map || req.body.compass || req.body.ping) {
+            poiGuidMap = true
+            if (req.body.map) {
+                poiGuidType = "map"
+            } else if (req.body.compass) {
+                poiGuidType = "compass"
+            } else if (req.body.ping) {
+                poiGuidType = "ping"
+            }
+        }
+        if (req.body.folia) {
+            poiGuidFolia = true
+        }
+        if (req.body.cluePoiMedia) {
+            poiGuidClue = true
+        }
+
+        if (req.body.clueGuidance) {
+            clueGuidance = req.body.clueGuidance
+        }
+
+        if (req.body.poiPAId) {
+            poiPAId = req.body.poiPAId
+        }
+        if (req.body.startMedia)
+            startMedia = req.body.startMedia;
+        if (req.body.feedbackMedia)
+            feedbackMedia = req.body.feedbackMedia;
+        if (req.body.poi)
+            poi = req.body.poi
+        if (req.body.situatedAct1) {
+            situatedAct1 = req.body.situatedAct1
+        }
+        if (req.body.situatedAct2) {
+            situatedAct2 = req.body.situatedAct2
+        }
+        if (req.body.situatedAct3) {
+            situatedAct3 = req.body.situatedAct3
+        }
+
+
+        var game = new Game();
+        game.activity1Success = activity1Success
+        game.activity1Fail = activity1Fail
+        game.activity2Success = activity2Success
+        game.activity2Fail = activity2Fail
+        game.activity3Success = activity3Success
+        game.activity3Fail = activity3Fail
+
+        game.poiIncorrectMessage = poiIncorrectMessage
+        game.poiReachedMessage = poiReachedMessage
+        game.inventoryItem = inventoryItem
+        game.poiGPSValidation = poiGPSValidation
+        game.poiQRValidation = poiQRValidation
+        game.poiGuidMap = poiGuidMap
+        game.poiGuidClue = poiGuidClue
+        game.poiGuidFolia = poiGuidFolia
+        game.activityName = activityName;
+        game.startMedia = startMedia;
+        game.feedbackMedia = feedbackMedia;
+        game.POI = poi
+        game.poiGuidType = poiGuidType
+        game.poiPAId = poiPAId
+        game.clueGuidance = clueGuidance
+        game.activities = [];
+        if (situatedAct1)
+            game.activities.push(situatedAct1)
+        if (situatedAct2)
+            game.activities.push(situatedAct2)
+        if (situatedAct3)
+            game.activities.push(situatedAct3)
+        game.poiScorePA = req.body.poiScorePA
+        game.poiPA = req.body.poiPA;
+        game.act1successScore = req.body.act1successScore
+        game.act1successMed = req.body.act1successMed
+        game.act2successScore = req.body.act2successScore
+        game.act2successMed = req.body.act2successMed
 
 
 
-            game.save(function(err) {
-                if (err) {
-                    console.log(err)
-                    return 500;
-                }
+        game.save(function(err) {
+            if (err) {
+                console.log(err)
+                return 500;
+            }
 
-                res.send({success:true,resource:game,operation:'create'})
-            });
+            res.send({ success: true, resource: game, operation: 'create' })
+        });
 
-        })
-        //handle reception lgof a complete game
+    })
+    //handle reception lgof a complete game
     app.get('/mlg', function(req, res) {
         MLG.find({}, function(err, game) {
             if (game) { res.send(game) }
@@ -813,9 +861,15 @@ module.exports = function(app, gfs) {
                 console.log(err)
                 return 500;
             }
-            res.send({ success: 'ok' })
+            res.send({ success: true, resource: Poi, operation: 'create' })
         });
 
+
+    })
+    app.get('/poi/:id', function(req, res) {
+        POI.findOne({ '_id': req.params.id, }, function(err, poi) {
+            res.send(poi);
+        })
 
     })
 
@@ -864,30 +918,30 @@ module.exports = function(app, gfs) {
 
     // Self explaining
     app.delete('/poi/:id', function(req, res) {
-        if (!req.params.user) { res.send({ success: false, message: 'user not authenticated' }) }
+        if (!req.user) { res.send({ success: false, message: 'user not authenticated' }) }
         POI.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
             function(err, doc) {
-                res.send(doc);
+                res.send({ success: true, resource: doc, operation: 'delete' })
             })
     });
 
 
 
     app.delete('/mlg/:id', function(req, res) {
-            var callback = function(err, numberAffected) {
-                if (err) {
-                    res.send({
-                        success: false
-                    })
-                } else res.send({
-                    success: true,
-                    number: numberAffected
-                });
-            };
-            MLG.find({ _id: req.params.id }).remove(callback)
+        var callback = function(err, numberAffected) {
+            if (err) {
+                res.send({
+                    success: false
+                })
+            } else res.send({
+                success: true,
+                number: numberAffected
+            });
+        };
+        MLG.find({ _id: req.params.id }).remove(callback)
 
-        })
-        //self explaining
+    })
+    //self explaining
 
 
 

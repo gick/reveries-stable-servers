@@ -1,5 +1,6 @@
 // load the things we need
 var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 
 // define the schema for our user model
 /*
@@ -12,14 +13,15 @@ var mapinfoSchema = mongoose.Schema({
 var gameSchema = mongoose.Schema({
 
     activityName: String,
-    startMediaId: String,
-    POIId: String,
+    startMedia: { type: Schema.Types.ObjectId, ref: 'StaticMedia' },
+    POI: { type: Schema.Types.ObjectId, ref: 'POI' },
     passActivities: Boolean,
     activities: [],
-    feedbackMediaId: String,
+    feedbackMedia: { type: Schema.Types.ObjectId, ref: 'StaticMedia' },
     poiScorePA: String,
     poiPAId: String,
-    cluePOIId:String,
+    clueGuidance:{ type: Schema.Types.ObjectId, ref: 'StaticMedia' },
+    typeLabel: { type: String, default: 'Unit game' },
     poiGuidFolia:Boolean,
     poiGuidMap:Boolean,
 		poiGuidType:String,
@@ -28,7 +30,7 @@ var gameSchema = mongoose.Schema({
     poiQRValidation:Boolean,
     poiIncorrectMessage:String,
     poiReachedMessage:String,
-    poiReachedInventory:String,
+    inventoryItem: { type: Schema.Types.ObjectId, ref: 'InventoryItem' },
     activity1Success:String,
     activity1Fail:String,
     activity2Success:String,

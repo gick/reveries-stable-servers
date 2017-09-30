@@ -52,22 +52,24 @@ module.exports = function(app, passport, gfs) {
     app.post('/file', function(req, res) {
         if (req.isAuthenticated()) {
             var part = req.files;
+            var metadata = {
+                owner: req.user._id.toString(),
+                status: 'Private',
+                title: part.file.name,
+                typeLabel: 'Image'
+            }
+
             var writestream = gfs.createWriteStream({
                 filename: part.file.name,
                 mode: 'w',
                 content_type: part.file.mimetype,
-                metadata: {
-                    owner: req.user._id.toString(),
-                    status: 'Private',
-                    title: part.file.name,
-                    typeLabel:'Image',
-                }
+                metadata: metadata,
             });
             writestream.write(part.file.data);
 
             writestream.on('close', function() {
                 res.send({
-                    success: true
+                    success: true,resource:metadata,operation:'create' 
                 });
 
             })
@@ -251,25 +253,6 @@ module.exports = function(app, passport, gfs) {
             })
         }
     });
-    app.get('/poi/:id', function getSinglePOI(req, res) {
-        User.findOne({
-            'poi._id': req.params.id
-        }, {
-            'poi.$': 1
-        }, function(err, result) {
-            if (result) {
-                res.send(result);
-            } else {
-                res.send({
-                    success: false,
-                    message: 'POI does not exists'
-                })
-            }
-
-
-        })
-    })
-
 
 
     /*
