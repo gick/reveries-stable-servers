@@ -61,7 +61,6 @@ module.exports = function(app, gfs) {
 
     });
 
-
     app.post('/badge', function(req, res) {
         if (!req.isAuthenticated()) {
             res.send({
@@ -115,8 +114,21 @@ module.exports = function(app, gfs) {
     app.get('/badge', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
-        } else
-            Badge.find({
+        }
+
+        if (req.query && req.query.search) {
+            Badge.find({ $text: { $search: req.query.search } })
+                .populate('media')
+                .exec(function(err, results) {
+                    res.send(results)
+
+                })
+            return
+        }
+
+
+
+        Badge.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
             })
             .populate('media')
@@ -142,8 +154,23 @@ module.exports = function(app, gfs) {
     app.get('/inventory', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
-        } else
-            InventoryItem.find({
+        }
+
+        if (req.query && req.query.search) {
+            InventoryItem.find({ $text: { $search: req.query.search } })
+                .populate('media')
+                .populate('inventoryDoc')
+                .exec(function(err, results) {
+                    res.send(results)
+
+                })
+            return
+        }
+
+
+
+
+        InventoryItem.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
             })
             .populate('media')
@@ -236,21 +263,32 @@ module.exports = function(app, gfs) {
     app.get('/staticmedia', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
-        } else
-            StaticMedia.find({
-                $or: [{ owner: req.user._id }, { status: 'Public' }]
-            }, function(err, staticmedias) {
-                for (var i = 0; i < staticmedias.length; i++) {
-                    var staticmedia = staticmedias[i]
-                    if (staticmedia.owner == req.user._id) {
-                        staticmedia.readonly = "readwrite"
-                    } else {
-                        staticmedia.readonly = "readonly"
-                    }
-                }
+            return
+        }
+        if (req.query && req.query.search) {
+            StaticMedia.find({ $text: { $search: req.query.search } }, function(err, results) {
+                res.send(results)
 
-                res.send(staticmedias)
             })
+            return
+        }
+
+        StaticMedia.find({
+            $or: [{ owner: req.user._id }, { status: 'Public' }]
+        }, function(err, staticmedias) {
+            for (var i = 0; i < staticmedias.length; i++) {
+                var staticmedia = staticmedias[i]
+                if (staticmedia.owner == req.user._id) {
+                    staticmedia.readonly = "readwrite"
+                } else {
+                    staticmedia.readonly = "readonly"
+                }
+            }
+
+            res.send(staticmedias)
+        })
+
+
     })
 
 
@@ -337,8 +375,21 @@ module.exports = function(app, gfs) {
     app.get('/freetextactivity', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
-        } else
-            FreeText.find({
+        }
+
+        if (req.query && req.query.search) {
+            FreeText.find({ $text: { $search: req.query.search } })
+                .populate('media')
+                .exec(function(err, results) {
+                    res.send(results)
+
+                })
+            return
+        }
+
+
+
+        FreeText.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
             })
             .populate('media')
@@ -438,8 +489,22 @@ module.exports = function(app, gfs) {
     app.get('/mcq', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
-        } else
-            MCQ.find({
+        }
+
+
+        if (req.query && req.query.search) {
+            MCQ.find({ $text: { $search: req.query.search } })
+                .populate('media')
+                .exec(function(err, results) {
+                    res.send(results)
+
+                })
+            return
+        }
+
+
+
+        MCQ.find({
                 $or: [{ owner: req.user._id }, { status: 'Public' }]
             })
             .populate('media')
@@ -507,14 +572,14 @@ module.exports = function(app, gfs) {
 
     //return a given game by id
     app.get('/unitGame/:id', function(req, res) {
-        Game.find({ '_id': req.params.id, })        
-        .populate('startMedia')
-        .populate('feedbackMedia')
-        .populate('POI')
-        .populate('inventoryItem')
-        .exec(function(err, game) {
-            res.send(game);
-        })
+        Game.find({ '_id': req.params.id, })
+            .populate('startMedia')
+            .populate('feedbackMedia')
+            .populate('POI')
+            .populate('inventoryItem')
+            .exec(function(err, game) {
+                res.send(game);
+            })
 
 
     })
@@ -526,13 +591,15 @@ module.exports = function(app, gfs) {
     //Return the list of Game (user independant)
     app.get('/unitGame', function(req, res) {
         Game.find({})
-        .populate('startMedia')
-        .populate('feedbackMedia')
-        .populate('POI')
-        .populate('inventoryItem')
-        .exec(function(err, game) {
-            res.send(game);
-        })
+            .populate('startMedia')
+            .populate('feedbackMedia')
+            .populate('POI')
+            .populate('freetextActivities')
+            .populate('mcqActivities')
+            .populate('inventoryItem')
+            .exec(function(err, game) {
+                res.send(game);
+            })
 
     })
 
@@ -546,6 +613,7 @@ module.exports = function(app, gfs) {
 
     })
 
+
     //Handle reception of a whole game unit, quite a lot of parameters
     // The game unit are saved in database mongodb://localhost/game to be accessible
     //from the game server
@@ -554,7 +622,9 @@ module.exports = function(app, gfs) {
         var activityName = req.body.activityName;
         var startMedia = null
         var poi = null
-        var activitiesArray
+        var freetextActivities = []
+        var mcqActivities = []
+        var activityOrder
         var feedbackMedia
 
         var poiPAId
@@ -646,15 +716,13 @@ module.exports = function(app, gfs) {
             feedbackMedia = req.body.feedbackMedia;
         if (req.body.poi)
             poi = req.body.poi
-        if (req.body.situatedAct1) {
-            situatedAct1 = req.body.situatedAct1
+        if (req.body.freetextActivities) {
+            freetextActivities = req.body.freetextActivities
         }
-        if (req.body.situatedAct2) {
-            situatedAct2 = req.body.situatedAct2
+        if (req.body.mcqActivities) {
+            mcqActivities = req.body.mcqActivities
         }
-        if (req.body.situatedAct3) {
-            situatedAct3 = req.body.situatedAct3
-        }
+
 
 
         var game = new Game();
@@ -664,7 +732,7 @@ module.exports = function(app, gfs) {
         game.activity2Fail = activity2Fail
         game.activity3Success = activity3Success
         game.activity3Fail = activity3Fail
-
+        game.activityOrder = req.body.activityOrder
         game.poiIncorrectMessage = poiIncorrectMessage
         game.poiReachedMessage = poiReachedMessage
         game.inventoryItem = inventoryItem
@@ -680,13 +748,8 @@ module.exports = function(app, gfs) {
         game.poiGuidType = poiGuidType
         game.poiPAId = poiPAId
         game.clueGuidance = clueGuidance
-        game.activities = [];
-        if (situatedAct1)
-            game.activities.push(situatedAct1)
-        if (situatedAct2)
-            game.activities.push(situatedAct2)
-        if (situatedAct3)
-            game.activities.push(situatedAct3)
+        game.freetextActivities = freetextActivities;
+        game.mcqActivities = mcqActivities
         game.poiScorePA = req.body.poiScorePA
         game.poiPA = req.body.poiPA;
         game.act1successScore = req.body.act1successScore
@@ -695,15 +758,64 @@ module.exports = function(app, gfs) {
         game.act2successMed = req.body.act2successMed
 
 
+        if (!req.body.itemId) {
+            game.save(function(err) {
+                if (err) {
+                    console.log(err)
+                    return 500;
+                }
 
-        game.save(function(err) {
-            if (err) {
-                console.log(err)
-                return 500;
-            }
+                res.send({ success: true, resource: game, operation: 'create' })
+            });
+            return
+        }
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            Game.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, unitGame with id " + req.body.itemId + " does not exists")
+                } else {
+                    toUpdate.activity1Success = activity1Success
+                    toUpdate.activity1Fail = activity1Fail
+                    toUpdate.activity2Success = activity2Success
+                    toUpdate.activity2Fail = activity2Fail
+                    toUpdate.activity3Success = activity3Success
+                    toUpdate.activity3Fail = activity3Fail
+                    toUpdate.activityOrder = req.body.activityOrder
+                    toUpdate.poiIncorrectMessage = poiIncorrectMessage
+                    toUpdate.poiReachedMessage = poiReachedMessage
+                    toUpdate.inventoryItem = inventoryItem
+                    toUpdate.poiGPSValidation = poiGPSValidation
+                    toUpdate.poiQRValidation = poiQRValidation
+                    toUpdate.poiGuidMap = poiGuidMap
+                    toUpdate.poiGuidClue = poiGuidClue
+                    toUpdate.poiGuidFolia = poiGuidFolia
+                    toUpdate.activityName = activityName;
+                    toUpdate.startMedia = startMedia;
+                    toUpdate.feedbackMedia = feedbackMedia;
+                    toUpdate.POI = poi
+                    toUpdate.poiGuidType = poiGuidType
+                    toUpdate.poiPAId = poiPAId
+                    toUpdate.clueGuidance = clueGuidance
+                    toUpdate.freetextActivities = freetextActivities;
+                    toUpdate.mcqActivities = mcqActivities
+                    toUpdate.poiScorePA = req.body.poiScorePA
+                    toUpdate.poiPA = req.body.poiPA;
+                    toUpdate.act1successScore = req.body.act1successScore
+                    toUpdate.act1successMed = req.body.act1successMed
+                    toUpdate.act2successScore = req.body.act2successScore
+                    toUpdate.act2successMed = req.body.act2successMed
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
 
-            res.send({ success: true, resource: game, operation: 'create' })
-        });
+                    })
+
+                }
+
+            })
+        }
 
     })
     //handle reception lgof a complete game

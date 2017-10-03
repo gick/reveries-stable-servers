@@ -2,6 +2,14 @@
 
 // set up ======================================================================
 // get all the tools we need
+
+// To index :
+// db.staticmedia.createIndex({label:'text',mkdown:'text',})
+//db.freetexts.createIndex({label:'text',question:'text',response:'text',correctMessage:'text',wrongMessage:'text'})
+//db.mcqs.createIndex({label:'text',correctMessage:'text',distractor1:'text',distractor2:'text',question:'text',response:'text',correctMessage:'text',wrongMessage:'text'})
+// db.badges.createIndex({label:'text',badgeText:'text',})
+// db.inventoryitems.createIndex({label:'text',itemText:'text',})
+
 var express  = require('express');
 var app      = express();
 var HTTPS_PORT = 443;
