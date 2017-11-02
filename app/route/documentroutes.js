@@ -1,5 +1,7 @@
 module.exports = function(app, gfs) {
     var spawn = require('child_process').spawn;
+
+
     // normal routes ===============================================================
     var User = require('../models/user.js');
     var Game = require('../models/game.js');
@@ -11,7 +13,6 @@ module.exports = function(app, gfs) {
     var FreeText = require('../models/freetext.js')
     var MCQ = require('../models/mcq.js')
     var StaticMedia = require('../models/staticmedia.js')
-
 
     // Handle reception of a new static media
     app.post('/staticmedia', function(req, res) {
@@ -546,18 +547,18 @@ module.exports = function(app, gfs) {
         var mlg = new MLG();
 
         mlg.label = req.body.label
-        mlg.staticMedia = req.body.mediaId
+        mlg.startpage = req.body.startpage
         if (req.body.multi && req.body.multi === 'on') {
             mlg.isCompetition = true
             mlg.playerNbr = req.body.playerNbr
         }
+        mlg.owner = req.user._id
+        mlg.status = req.body.status
         mlg.gameDifficulty = req.body.gameDifficulty
         mlg.gameDuration = req.body.gameDuration
         mlg.gameProximity = req.body.gameProximity
-        mlg.unitGames = req.body.unitGameId.split(',')
-        if (req.body.badgeId) {
-            mlg.badgeId = req.body.badgeId
-        }
+        mlg.unitGames = req.body.unitGames
+        mlg.badge=req.body.badge
         mlg.save(function(err) {
             if (err) {
                 console.log(err)
@@ -570,8 +571,8 @@ module.exports = function(app, gfs) {
 
     })
 
-    //return a given game by id
-    app.get('/unitGame/:id', function(req, res) {
+    //return a given game by idin
+    app.get('/unitgame/:id', function(req, res) {
         Game.find({ '_id': req.params.id, })
             .populate('startMedia')
             .populate('feedbackMedia')
@@ -589,22 +590,41 @@ module.exports = function(app, gfs) {
 
 
     //Return the list of Game (user independant)
-    app.get('/unitGame', function(req, res) {
-        Game.find({})
+    app.get('/unitgame', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+
+        Game.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .populate('startMedia')
             .populate('feedbackMedia')
             .populate('POI')
             .populate('freetextActivities')
             .populate('mcqActivities')
             .populate('inventoryItem')
-            .exec(function(err, game) {
-                res.send(game);
+            .exec(function(err, games) {
+
+                for (var i = 0; i < games.length; i++) {
+                    var game = games[i]
+                    if (game.owner == req.user._id) {
+                        game.readonly = "readwrite"
+                    } else {
+                        game.readonly = "readonly"
+                    }
+                }
+
+
+                res.send(games);
             })
 
     })
 
     // Self explaining
-    app.delete('/unitGame/:id', function(req, res) {
+    app.delete('/unitgame/:id', function(req, res) {
         if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
         Game.findOneAndRemove({ '_id': req.params.id },
             function(err, doc) {
@@ -618,8 +638,7 @@ module.exports = function(app, gfs) {
     // The game unit are saved in database mongodb://localhost/game to be accessible
     //from the game server
 
-    app.post('/unitGame', function(req, res) {
-        var activityName = req.body.activityName;
+    app.post('/unitgame', function(req, res) {
         var startMedia = null
         var poi = null
         var freetextActivities = []
@@ -681,7 +700,6 @@ module.exports = function(app, gfs) {
         if (req.body.inventoryItem) {
             inventoryItem = req.body.inventoryItem
         }
-
         if (req.body.QR) {
             poiQRValidation = true
         }
@@ -726,6 +744,12 @@ module.exports = function(app, gfs) {
 
 
         var game = new Game();
+
+        if (req.isAuthenticated()) {
+            game.owner = req.user._id
+        }
+
+        game.inventoryPage=req.body.inventoryStep
         game.activity1Success = activity1Success
         game.activity1Fail = activity1Fail
         game.activity2Success = activity2Success
@@ -741,7 +765,7 @@ module.exports = function(app, gfs) {
         game.poiGuidMap = poiGuidMap
         game.poiGuidClue = poiGuidClue
         game.poiGuidFolia = poiGuidFolia
-        game.activityName = activityName;
+        game.label = req.body.label;
         game.startMedia = startMedia;
         game.feedbackMedia = feedbackMedia;
         game.POI = poi
@@ -774,6 +798,7 @@ module.exports = function(app, gfs) {
                 if (!toUpdate) {
                     console.log("Err, unitGame with id " + req.body.itemId + " does not exists")
                 } else {
+                    toUpdate.inventoryPage=req.body.inventoryStep
                     toUpdate.activity1Success = activity1Success
                     toUpdate.activity1Fail = activity1Fail
                     toUpdate.activity2Success = activity2Success
@@ -789,7 +814,7 @@ module.exports = function(app, gfs) {
                     toUpdate.poiGuidMap = poiGuidMap
                     toUpdate.poiGuidClue = poiGuidClue
                     toUpdate.poiGuidFolia = poiGuidFolia
-                    toUpdate.activityName = activityName;
+                    toUpdate.label = req.body.label;
                     toUpdate.startMedia = startMedia;
                     toUpdate.feedbackMedia = feedbackMedia;
                     toUpdate.POI = poi
@@ -820,10 +845,53 @@ module.exports = function(app, gfs) {
     })
     //handle reception lgof a complete game
     app.get('/mlg', function(req, res) {
-        MLG.find({}, function(err, game) {
-            if (game) { res.send(game) }
-        })
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+
+        MLG.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .deepPopulate(['startpage','badge','unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities','unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
+            .exec(function(err, mlgs) {
+                for (var i = 0; i < mlgs.length; i++) {
+                    var mlg = mlgs[i]
+                    if (mlg.owner == req.user._id) {
+                        mlg.readonly = "readwrite"
+                    } else {
+                        mlg.readonly = "readonly"
+                    }
+                }
+                res.send(mlgs)
+            })
     })
+    app.put('/unitgame/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(Game, req, res);
+
+    })
+
+
+    app.put('/mlg/:id/share', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        switchStatus(MLG, req, res);
+
+    })
+
 
     app.put('/freetext/:id/share', function(req, res) {
         if (!req.isAuthenticated()) {
