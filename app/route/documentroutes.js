@@ -115,6 +115,7 @@ module.exports = function(app, gfs) {
     app.get('/badge', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
+            return
         }
 
         if (req.query && req.query.search) {
@@ -129,9 +130,7 @@ module.exports = function(app, gfs) {
 
 
 
-        Badge.find({
-                $or: [{ owner: req.user._id }, { status: 'Public' }]
-            })
+        Badge.find({ owner: req.user._id })
             .populate('media')
             .exec(function(err, badges) {
                 for (var i = 0; i < badges.length; i++) {
@@ -155,6 +154,7 @@ module.exports = function(app, gfs) {
     app.get('/inventory', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
+            return
         }
 
         if (req.query && req.query.search) {
@@ -171,9 +171,7 @@ module.exports = function(app, gfs) {
 
 
 
-        InventoryItem.find({
-                $or: [{ owner: req.user._id }, { status: 'Public' }]
-            })
+        InventoryItem.find({ owner: req.user._id })
             .populate('media')
             .populate('inventoryDoc')
             .exec(function(err, inventorys) {
@@ -274,9 +272,7 @@ module.exports = function(app, gfs) {
             return
         }
 
-        StaticMedia.find({
-            $or: [{ owner: req.user._id }, { status: 'Public' }]
-        }, function(err, staticmedias) {
+        StaticMedia.find({ owner: req.user._id }, function(err, staticmedias) {
             for (var i = 0; i < staticmedias.length; i++) {
                 var staticmedia = staticmedias[i]
                 if (staticmedia.owner == req.user._id) {
@@ -376,6 +372,7 @@ module.exports = function(app, gfs) {
     app.get('/freetextactivity', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
+            return
         }
 
         if (req.query && req.query.search) {
@@ -390,9 +387,7 @@ module.exports = function(app, gfs) {
 
 
 
-        FreeText.find({
-                $or: [{ owner: req.user._id }, { status: 'Public' }]
-            })
+        FreeText.find({ owner: req.user._id })
             .populate('media')
             .exec(function(err, freetexts) {
                 for (var i = 0; i < freetexts.length; i++) {
@@ -490,6 +485,7 @@ module.exports = function(app, gfs) {
     app.get('/mcq', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
+            return
         }
 
 
@@ -505,9 +501,7 @@ module.exports = function(app, gfs) {
 
 
 
-        MCQ.find({
-                $or: [{ owner: req.user._id }, { status: 'Public' }]
-            })
+        MCQ.find({ owner: req.user._id })
             .populate('media')
             .exec(function(err, mcqs) {
                 for (var i = 0; i < mcqs.length; i++) {
@@ -599,7 +593,7 @@ module.exports = function(app, gfs) {
             return;
         }
 
-        Game.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+        Game.find({ owner: req.user._id })
             .populate('startMedia')
             .populate('feedbackMedia')
             .populate('POI')
@@ -853,7 +847,7 @@ module.exports = function(app, gfs) {
             return;
         }
 
-        MLG.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+        MLG.find({ owner: req.user._id })
             .deepPopulate(['startpage','badge','unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities','unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
             .exec(function(err, mlgs) {
                 for (var i = 0; i < mlgs.length; i++) {
@@ -1078,9 +1072,7 @@ module.exports = function(app, gfs) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
         } else
-            POI.find({
-                $or: [{ owner: req.user._id }, { status: 'Public' }]
-            }, function(err, pois) {
+            POI.find({ owner: req.user._id }, function(err, pois) {
                 for (var i = 0; i < pois.length; i++) {
                     var poi = pois[i]
                     if (poi.owner == req.user._id) {
