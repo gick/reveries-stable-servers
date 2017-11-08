@@ -14,9 +14,27 @@ module.exports = function(app, passport,webdir) {
         if (req.isAuthenticated()) {
             res.json({ success: true, user: req.user })
         } else {
+            req.logout()
+            res.json({ success: false ,info:"Username or password missmatch"})
+        }
+    });
+
+    app.get('/newprofile', function(req, res) {
+        if (req.isAuthenticated()) {
+            var user=req.user
+            user.new=true
+            res.json({ success: true, user: user })
+        } else {
             res.json({ success: false })
         }
     });
+
+
+    app.get('/newprofilefail', function(req, res) {
+            req.logout()
+            res.json({ success: false ,info:"Username already exists"})
+    });
+
 
     // LOGOUT ==============================
     app.get('/logout', function(req, res) {
@@ -38,8 +56,8 @@ module.exports = function(app, passport,webdir) {
 
     // SIGNUP =================================
     app.post('/signup', passport.authenticate('local-signup', {
-        successRedirect: '/profile', // redirect to the secure profile section
-        failureRedirect: '/profile', // redirect back to the signup page if there is an error
+        successRedirect: '/newprofile', // redirect to the secure profile section
+        failureRedirect: '/newprofilefail', // redirect back to the signup page if there is an error
         failureFlash: true // allow flash messages
     }));
 

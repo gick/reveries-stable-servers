@@ -130,7 +130,8 @@ module.exports = function(app, gfs) {
 
 
 
-        Badge.find({ owner: req.user._id })
+        //        Badge.find({ owner: req.user._id })
+        Badge.find($or[{ owner: req.user._id }, { status: 'Public' }])
             .populate('media')
             .exec(function(err, badges) {
                 for (var i = 0; i < badges.length; i++) {
@@ -171,7 +172,8 @@ module.exports = function(app, gfs) {
 
 
 
-        InventoryItem.find({ owner: req.user._id })
+        //   InventoryItem.find({ owner: req.user._id })
+        InventoryItem.find($or[{ owner: req.user._id }, { status: 'Public' }])
             .populate('media')
             .populate('inventoryDoc')
             .exec(function(err, inventorys) {
@@ -272,18 +274,20 @@ module.exports = function(app, gfs) {
             return
         }
 
-        StaticMedia.find({ owner: req.user._id }, function(err, staticmedias) {
-            for (var i = 0; i < staticmedias.length; i++) {
-                var staticmedia = staticmedias[i]
-                if (staticmedia.owner == req.user._id) {
-                    staticmedia.readonly = "readwrite"
-                } else {
-                    staticmedia.readonly = "readonly"
+        //   StaticMedia.find({ owner: req.user._id })
+        StaticMedia.find($or[{ owner: req.user._id }, { status: 'Public' }])
+            .exec(function(err, staticmedias) {
+                for (var i = 0; i < staticmedias.length; i++) {
+                    var staticmedia = staticmedias[i]
+                    if (staticmedia.owner == req.user._id) {
+                        staticmedia.readonly = "readwrite"
+                    } else {
+                        staticmedia.readonly = "readonly"
+                    }
                 }
-            }
 
-            res.send(staticmedias)
-        })
+                res.send(staticmedias)
+            })
 
 
     })
@@ -387,7 +391,8 @@ module.exports = function(app, gfs) {
 
 
 
-        FreeText.find({ owner: req.user._id })
+        // FreeText.find({ owner: req.user._id })
+        FreeText.find($or[{ owner: req.user._id }, { status: 'Public' }])
             .populate('media')
             .exec(function(err, freetexts) {
                 for (var i = 0; i < freetexts.length; i++) {
@@ -501,7 +506,8 @@ module.exports = function(app, gfs) {
 
 
 
-        MCQ.find({ owner: req.user._id })
+        //        MCQ.find({ owner: req.user._id })
+        MCQ.find($or[{ owner: req.user._id }, { status: 'Public' }])
             .populate('media')
             .exec(function(err, mcqs) {
                 for (var i = 0; i < mcqs.length; i++) {
@@ -552,7 +558,7 @@ module.exports = function(app, gfs) {
         mlg.gameDuration = req.body.gameDuration
         mlg.gameProximity = req.body.gameProximity
         mlg.unitGames = req.body.unitGames
-        mlg.badge=req.body.badge
+        mlg.badge = req.body.badge
         mlg.save(function(err) {
             if (err) {
                 console.log(err)
@@ -593,7 +599,8 @@ module.exports = function(app, gfs) {
             return;
         }
 
-        Game.find({ owner: req.user._id })
+        //Game.find({ owner: req.user._id })
+        Game.find($or[{ owner: req.user._id }, { status: 'Public' }])
             .populate('startMedia')
             .populate('feedbackMedia')
             .populate('POI')
@@ -743,7 +750,7 @@ module.exports = function(app, gfs) {
             game.owner = req.user._id
         }
 
-        game.inventoryPage=req.body.inventoryStep
+        game.inventoryPage = req.body.inventoryStep
         game.activity1Success = activity1Success
         game.activity1Fail = activity1Fail
         game.activity2Success = activity2Success
@@ -792,7 +799,7 @@ module.exports = function(app, gfs) {
                 if (!toUpdate) {
                     console.log("Err, unitGame with id " + req.body.itemId + " does not exists")
                 } else {
-                    toUpdate.inventoryPage=req.body.inventoryStep
+                    toUpdate.inventoryPage = req.body.inventoryStep
                     toUpdate.activity1Success = activity1Success
                     toUpdate.activity1Fail = activity1Fail
                     toUpdate.activity2Success = activity2Success
@@ -847,8 +854,9 @@ module.exports = function(app, gfs) {
             return;
         }
 
-        MLG.find({ owner: req.user._id })
-            .deepPopulate(['startpage','badge','unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities','unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
+        // MLG.find({ owner: req.user._id })
+        MLG.find($or[{ owner: req.user._id }, { status: 'Public' }])
+            .deepPopulate(['startpage', 'badge', 'unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities', 'unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
             .exec(function(err, mlgs) {
                 for (var i = 0; i < mlgs.length; i++) {
                     var mlg = mlgs[i]
@@ -1072,7 +1080,9 @@ module.exports = function(app, gfs) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
         } else
-            POI.find({ owner: req.user._id }, function(err, pois) {
+            //POI.find({ owner: req.user._id }) 
+            POI.find($or[{ owner: req.user._id }, { status: 'Public' }])
+            .exec(function(err, pois) {
                 for (var i = 0; i < pois.length; i++) {
                     var poi = pois[i]
                     if (poi.owner == req.user._id) {
