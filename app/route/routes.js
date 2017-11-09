@@ -15,7 +15,7 @@ module.exports = function(app, passport,webdir) {
             res.json({ success: true, user: req.user })
         } else {
             req.logout()
-            res.json({ success: false ,info:"Username or password missmatch"})
+            res.json({ success: false ,info:"Login ou mot de passe incorrect"})
         }
     });
 
@@ -32,7 +32,7 @@ module.exports = function(app, passport,webdir) {
 
     app.get('/newprofilefail', function(req, res) {
             req.logout()
-            res.json({ success: false ,info:"Username already exists"})
+            res.json({ success: false ,info:"Le nom d'utilisateur est déjà utilisé"})
     });
 
 
