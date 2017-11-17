@@ -18,6 +18,8 @@ var gameSchema = mongoose.Schema({
     passActivities: Boolean,
     readonly: String,   
     owner:String,
+        creationDate:String,
+
     status:String,
     inventoryPage:String,
     freetextActivities: [{ type: Schema.Types.ObjectId, ref: 'FreeText' }],

@@ -7,6 +7,7 @@ module.exports = function(app, gfs) {
     var Game = require('../models/game.js');
     var Badge = require('../models/badge.js');
     var InventoryItem = require('../models/inventoryItem.js');
+    var dateFormat = require('dateformat');
 
     var MLG = require('../models/mlg.js');
     var POI = require('../models/poi.js')
@@ -25,6 +26,9 @@ module.exports = function(app, gfs) {
         }
         var staticmedia = new StaticMedia()
         staticmedia.label = req.body.label;
+        var now = new Date()
+        staticmedia.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
         staticmedia.owner = req.user._id
         staticmedia.status = req.body.status;
         staticmedia.mkdown = req.body.mkdown;
@@ -76,6 +80,8 @@ module.exports = function(app, gfs) {
         badge.owner = req.user._id
         badge.status = req.body.status;
         badge.media = req.body.badgePageId;
+        var now = new Date()
+        badge.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
 
         if (!req.body.itemId) {
             badge.save(function(err) {
@@ -131,7 +137,7 @@ module.exports = function(app, gfs) {
 
 
         //        Badge.find({ owner: req.user._id })
-        Badge.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        Badge.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .populate('media')
             .exec(function(err, badges) {
                 for (var i = 0; i < badges.length; i++) {
@@ -173,7 +179,7 @@ module.exports = function(app, gfs) {
 
 
         //   InventoryItem.find({ owner: req.user._id })
-        InventoryItem.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        InventoryItem.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .populate('media')
             .populate('inventoryDoc')
             .exec(function(err, inventorys) {
@@ -223,6 +229,8 @@ module.exports = function(app, gfs) {
         inventory.status = req.body.status;
         inventory.media = req.body.itemPageId;
         inventory.inventoryDoc = req.body.itemDocPageId;
+        var now = new Date()
+        inventory.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
 
         if (!req.body.itemId) {
             inventory.save(function(err) {
@@ -275,7 +283,7 @@ module.exports = function(app, gfs) {
         }
 
         //   StaticMedia.find({ owner: req.user._id })
-        StaticMedia.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        StaticMedia.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .exec(function(err, staticmedias) {
                 for (var i = 0; i < staticmedias.length; i++) {
                     var staticmedia = staticmedias[i]
@@ -332,6 +340,8 @@ module.exports = function(app, gfs) {
         newFreeText.owner = req.user._id
         newFreeText.status = req.body.status;
         newFreeText.responseLabel = req.body.responseLabel;
+        var now = new Date()
+        newFreeText.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
 
         if (!req.body.itemId) {
             newFreeText.save(function(err) {
@@ -392,7 +402,7 @@ module.exports = function(app, gfs) {
 
 
         // FreeText.find({ owner: req.user._id })
-        FreeText.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        FreeText.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .populate('media')
             .exec(function(err, freetexts) {
                 for (var i = 0; i < freetexts.length; i++) {
@@ -444,6 +454,9 @@ module.exports = function(app, gfs) {
         Mcq.wrongMessage = req.body.wrongMessage;
         Mcq.correctMessage = req.body.correctMessage;
         Mcq.media = req.body.mediaId;
+        var now = new Date()
+        Mcq.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
         //save if no mediaId
         if (!req.body.itemId) {
             Mcq.save(function(err) {
@@ -507,7 +520,7 @@ module.exports = function(app, gfs) {
 
 
         //        MCQ.find({ owner: req.user._id })
-        MCQ.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        MCQ.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .populate('media')
             .exec(function(err, mcqs) {
                 for (var i = 0; i < mcqs.length; i++) {
@@ -559,6 +572,9 @@ module.exports = function(app, gfs) {
         mlg.gameProximity = req.body.gameProximity
         mlg.unitGames = req.body.unitGames
         mlg.badge = req.body.badge
+        var now = new Date()
+        mlg.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
         mlg.save(function(err) {
             if (err) {
                 console.log(err)
@@ -600,7 +616,7 @@ module.exports = function(app, gfs) {
         }
 
         //Game.find({ owner: req.user._id })
-        Game.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        Game.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .populate('startMedia')
             .populate('feedbackMedia')
             .populate('POI')
@@ -755,6 +771,9 @@ module.exports = function(app, gfs) {
         game.activity1Fail = activity1Fail
         game.activity2Success = activity2Success
         game.activity2Fail = activity2Fail
+        var now = new Date()
+        game.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
         game.activity3Success = activity3Success
         game.activity3Fail = activity3Fail
         game.activityOrder = req.body.activityOrder
@@ -855,7 +874,7 @@ module.exports = function(app, gfs) {
         }
 
         // MLG.find({ owner: req.user._id })
-        MLG.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+        MLG.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .deepPopulate(['startpage', 'badge', 'unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities', 'unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
             .exec(function(err, mlgs) {
                 for (var i = 0; i < mlgs.length; i++) {
@@ -1015,6 +1034,9 @@ module.exports = function(app, gfs) {
             });
             return;
         }
+        var now = new Date()
+        var date = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
         var condition = {
             '_id': req.user._id
         };
@@ -1022,7 +1044,7 @@ module.exports = function(app, gfs) {
             owner: req.user._id,
             status: req.body.status,
             label: req.body.label,
-            date: Date.now(),
+            creationDate: date,
             label: req.body.label,
             latitude: req.body.latitude,
             longitude: req.body.longitude,
@@ -1074,14 +1096,36 @@ module.exports = function(app, gfs) {
     });
 
 
+    app.get('/listUsers', function(req, res) {
+        var userPromises = []
+        User.find()
+            .exec(function(err, users) {
+                for (i = 0; i < users.length; i++) {
+                    userPromises.push(populateUsersPOI(users[i]))
+                    userPromises.push(populateUsersMCQ(users[i]))
+                    userPromises.push(populateUsersFreetext(users[i]))
+                    userPromises.push(populateUsersStaticMedia(users[i]))
+                    userPromises.push(populateUsersUnitGames(users[i]))
+                    userPromises.push(populateUsersBadges(users[i]))
+                    userPromises.push(populateUsersInventory(users[i]))
+                    userPromises.push(populateUsersMLG(users[i]))
 
+                }
+            }).then(function(users) {
+                Promise.all(userPromises).then(function() {
+                    res.send(users)
+                })
+
+            })
+
+    })
     // Self explaining
     app.get('/poi', function(req, res) {
         if (!req.user) {
             res.send({ success: false, 'message': 'please authenticate' })
         } else
             //POI.find({ owner: req.user._id }) 
-            POI.find({$or:[{ owner: req.user._id }, { status: 'Public' }]})
+            POI.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
             .exec(function(err, pois) {
                 for (var i = 0; i < pois.length; i++) {
                     var poi = pois[i]
@@ -1098,6 +1142,71 @@ module.exports = function(app, gfs) {
 
 
 
+    var populateUsersPOI = function(user) {
+        return POI.find({ owner: user._id })
+            .exec(function(err, pois) {
+                user.POI = pois
+            })
+    }
+
+    var populateUsersMCQ = function(user) {
+        return MCQ.find({ owner: user._id })
+            .exec(function(err, mcqs) {
+                user.MCQ = mcqs
+            })
+    }
+
+
+    var populateUsersFreetext = function(user) {
+        return FreeText.find({ owner: user._id })
+            .exec(function(err, freetexts) {
+                user.Freetexts = freetexts
+            })
+    }
+
+    var populateUsersStaticMedia = function(user) {
+        return StaticMedia.find({ owner: user._id })
+            .exec(function(err, staticmedias) {
+                user.staticMedias = staticmedias
+            })
+    }
+    var populateUsersUnitGames = function(user) {
+        return Game.find({ owner: user._id })
+            .exec(function(err, unitGames) {
+                user.unitGames = unitGames
+            })
+    }
+
+    var populateUsersBadges = function(user) {
+        return Badge.find({ owner: user._id })
+            .exec(function(err, badges) {
+                user.Badges = badges
+            })
+    }
+    var populateUsersInventory = function(user) {
+        return InventoryItem.find({ owner: user._id })
+            .exec(function(err, items) {
+                user.inventoryItems = items
+            })
+    }
+
+    var populateUsersMLG = function(user) {
+        return MLG.find({ owner: user._id })
+            .exec(function(err, mlgs) {
+                user.MLG = mlgs
+            })
+    }
+
+
+    app.get('/userImages' , function(req,res) {
+        var targetUser=req.param('userId')
+         gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': targetUser }).toArray(function(err, images) {
+            res.send(images)
+        })
+    })
+
+
+
     // Self explaining
     app.delete('/poi/:id', function(req, res) {
         if (!req.user) { res.send({ success: false, message: 'user not authenticated' }) }
@@ -1108,6 +1217,128 @@ module.exports = function(app, gfs) {
     });
 
 
+    app.delete('/user/:id', function(req, res) {
+        if (!req.user) { res.send({ success: false, message: 'user not authenticated' }) }
+        if (!req.user.isadmin) { res.send({ success: false, message: 'Only admin can suppress acount' }) }
+
+        User.findOneAndRemove({ '_id': req.params.id },
+            function(err, doc) {
+                res.send({ success: true, resource: doc, operation: 'delete' })
+            })
+    });
+
+
+    app.delete('/userResources', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, message: 'user not authenticated' })
+        }
+
+        if (!req.user.isadmin) {
+            res.send({ success: false, message: 'Only admin can suppress resources' })
+        }
+
+        var userTarget = req.param('targetUser')
+        switch (req.param('resourceType')) {
+            case 'POI':
+                removeUserPOIs(userTarget, res)
+                break
+            case 'MCQ':
+                removeUserMCQs(userTarget, res)
+                break
+            case 'FreeText':
+                removeUserFreetexts(userTarget, res)
+                break
+            case 'StaticMedia':
+                removeUserStaticMedias(userTarget, res)
+                break
+            case 'UnitGame':
+                removeUserUnitgames(userTarget, res)
+                break
+            case 'Badge':
+                removeUserBadges(userTarget, res)
+                break
+            case 'Inventory':
+                removeUserInventory(userTarget, res)
+                break
+            case 'MLG':
+                removeUserMLGs(userTarget, res)
+                break
+            case 'Image':
+                removeUserImages(userTarget, res)
+
+        }
+    });
+
+
+    var removeUserPOIs = function(userTarget, res) {
+        return POI.remove({ owner: userTarget })
+            .exec(function(err, pois) {
+                res.send({ success: true, resourceType: 'POI', operation: 'bulkDelete' })
+
+            })
+    }
+
+    var removeUserMCQs = function(userTarget, res) {
+        return MCQ.remove({ owner: userTarget })
+            .exec(function(err, mcqs) {
+                res.send({ success: true, resourceType: 'MCQ', operation: 'bulkDelete' })
+            })
+    }
+
+
+    var removeUserFreetexts = function(userTarget, res) {
+        return FreeText.remove({ owner: userTarget })
+            .exec(function(err, freetexts) {
+                res.send({ success: true, resourceType: 'FreeText', operation: 'bulkDelete' })
+            })
+    }
+
+    var removeUserStaticMedias = function(userTarget, res) {
+        return StaticMedia.remove({ owner: userTarget })
+            .exec(function(err, staticmedias) {
+                res.send({ success: true, resourceType: 'multimedia documents', operation: 'bulkDelete' })
+            })
+    }
+    var removeUserUnitgames = function(userTarget, res) {
+        return Game.remove({ owner: userTarget })
+            .exec(function(err, unitGames) {
+                res.send({ success: true, resourceType: 'unité de jeux', operation: 'bulkDelete' })
+            })
+    }
+
+    var removeUserBadges = function(userTarget, res) {
+        return Badge.remove({ owner: userTarget })
+            .exec(function(err, badges) {
+                res.send({ success: true, resourceType: 'badges', operation: 'bulkDelete' })
+            })
+    }
+    var removeUserInventory = function(userTarget, res) {
+        return InventoryItem.remove({ owner: userTarget })
+            .exec(function(err, items) {
+                res.send({ success: true, resourceType: 'inventaire', operation: 'bulkDelete' })
+            })
+    }
+
+    var removeUserMLGs = function(userTarget, res) {
+        return MLG.remove({ owner: userTarget })
+            .exec(function(err, mlgs) {
+                res.send({ success: true, resourceType: 'MLG', operation: 'bulkDelete' })
+            })
+    }
+
+
+    var removeUserImages = function(userTarget, res) {
+        return MLG.remove({ owner: userTarget })
+            .exec(function(err, mlgs) {
+                res.send({ success: true, resourceType: 'MLG', operation: 'bulkDelete' })
+            })
+    }
+
+    var removeUserImages = function(userTarget, res) {
+         gfs.files.remove({ contentType: /.*image.*/, 'metadata.owner': userTarget},function(){
+            res.send({ success: true, resourceType: 'Images', operation: 'bulkDelete' })
+         })
+    }
 
     app.delete('/mlg/:id', function(req, res) {
         var callback = function(err, numberAffected) {

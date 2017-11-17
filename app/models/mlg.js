@@ -12,6 +12,7 @@ var mapinfoSchema = mongoose.Schema({
     zoomLevel:Number,
 })*/
 var mlg = mongoose.Schema({
+    creationDate:String,
 
     label: String,
     isCompetition: Boolean,

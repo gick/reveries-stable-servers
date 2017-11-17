@@ -2,17 +2,26 @@ module.exports = function(app, passport, webdir) {
 
     // normal routes ===============================================================
     var express = require('express');
+    var async = require('async')
+    var dateFormat = require('dateformat');
     var User = require('../models/user.js');
+    app.use(express.static(webdir));
     var nodemailer = require("nodemailer");
     var crypto = require('crypto');
-    var async = require('async')
 
-    app.use(express.static(webdir));
-
+    app.get('/reset/:token', function(req, res) {
+        User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+            if (!user) {
+                req.flash('error', 'Password reset token is invalid or has expired.');
+                return res.redirect('/forgot');
+            }
+            res.redirect('/#reset' + '?token=' + req.params.token);
+        });
+    });
     app.post('/reset/:token', function(req, res) {
         async.waterfall([
             function(done) {
-                User.findOne({resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+                User.findOne({ zresetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
                     if (!user) {
                         req.flash('error', 'Password reset token is invalid or has expired.');
                         return res.redirect('back');
@@ -46,7 +55,7 @@ module.exports = function(app, passport, webdir) {
                 User.findOne({ email: req.body.email }, function(err, user) {
 
                     if (!user) {
-                        res.send({ operation: 'reset', success:true,info: 'Pas de compte associé à ce mail' });
+                        res.send({ operation: 'reset', info: 'Pas de compte associé à ce mailHo' });
                         return
                     }
 
@@ -84,28 +93,29 @@ module.exports = function(app, passport, webdir) {
                 });
             }
         ], function(err) {
-            res.send({ operation: 'reset', success:true,info: 'Un email à été envoyé à cette adresse' });
+            res.send('success')
             if (err) return next(err);
         });
 
 
     })
 
-    app.get('/reset/:token', function(req, res) {
-        User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-            if (!user) {
-                req.flash('error', 'Password reset token is invalid or has expired.');
-                return res.redirect('/forgot');
-            }
-            res.redirect('/#reset' + '?token=' + req.params.token);
-        });
-    });
-
     // PROFILE SECTION =========================
     // it is a way to know if user is currently authenticated (after reload for example)
     app.get('/profile', function(req, res) {
         if (req.isAuthenticated()) {
-            res.json({ success: true, user: req.user })
+            var user = User.findById(req.user._id, function(err, user) {
+                var now = new Date()
+
+
+                user.lastLogin = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+                user.save()
+                res.json({ success: true, user: req.user })
+
+            })
+
+
+
         } else {
             req.logout()
             res.json({ success: false, info: "Login ou mot de passe incorrect" })

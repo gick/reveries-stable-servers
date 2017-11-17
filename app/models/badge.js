@@ -4,6 +4,8 @@ var Schema = mongoose.Schema;
 var badgeSchema = mongoose.Schema({
     label: String,
     badgeText: String,
+    creationDate:String,
+
     readonly: String,
     owner: String,
     status: String,

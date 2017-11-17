@@ -4,6 +4,8 @@ var Schema = mongoose.Schema;
 var inventoryItemSchema = mongoose.Schema({
     label: String,
     label: String,
+    creationDate:String,
+
     itemText: String,
     readonly: String,
     owner: String,
