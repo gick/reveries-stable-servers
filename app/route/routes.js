@@ -12,25 +12,22 @@ module.exports = function(app, passport, webdir) {
     app.post('/reset/:token', function(req, res) {
         async.waterfall([
             function(done) {
-                User.findOne({resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+                User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
                     if (!user) {
                         req.flash('error', 'Password reset token is invalid or has expired.');
                         return res.redirect('back');
                     }
-
-                    user.password = req.body.password;
+                    user.password = user.generateHash(req.body.password);
                     user.resetPasswordToken = undefined;
                     user.resetPasswordExpires = undefined;
 
                     user.save(function(err) {
-                        req.logIn(user, function(err) {
-                            done(err, user);
-                        });
+                        res.send({ operation: 'reset', success: true, info: 'Opération réussie, vous pouvez vous connecter a votre compte' })
                     });
                 });
             },
         ], function(err) {
-            res.redirect('/#login');
+           // res.redirect('/#login');
         });
     });
 
@@ -46,7 +43,7 @@ module.exports = function(app, passport, webdir) {
                 User.findOne({ email: req.body.email }, function(err, user) {
 
                     if (!user) {
-                        res.send({ operation: 'reset', success:true,info: 'Pas de compte associé à ce mail' });
+                        res.send({ operation: 'reset', success: true, info: 'Pas de compte associé à ce mail' });
                         return
                     }
 
@@ -84,7 +81,7 @@ module.exports = function(app, passport, webdir) {
                 });
             }
         ], function(err) {
-            res.send({ operation: 'reset', success:true,info: 'Un email à été envoyé à cette adresse' });
+            res.send({ operation: 'reset', success: true, info: 'Un email à été envoyé à cette adresse' });
             if (err) return next(err);
         });
 
