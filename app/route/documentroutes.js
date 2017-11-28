@@ -1,6 +1,7 @@
 module.exports = function(app, gfs) {
     var spawn = require('child_process').spawn;
 
+    var mongoose = require('mongoose');
 
     // normal routes ===============================================================
     var User = require('../models/user.js');
@@ -8,6 +9,7 @@ module.exports = function(app, gfs) {
     var Badge = require('../models/badge.js');
     var InventoryItem = require('../models/inventoryItem.js');
     var dateFormat = require('dateformat');
+    var Tutorial = require('../models/tutorial.js');
 
     var MLG = require('../models/mlg.js');
     var POI = require('../models/poi.js')
@@ -51,6 +53,80 @@ module.exports = function(app, gfs) {
                     toUpdate.owner = req.user._id
                     toUpdate.status = req.body.status;
                     toUpdate.mkdown = req.body.mkdown;
+                    toUpdate.save(function(err) {
+                        if (err) {
+                            console.log(err)
+                            res.send({ success: false })
+                        } else res.send({ success: true, resource: toUpdate, operation: 'update' })
+
+                    })
+
+                }
+
+            })
+        }
+
+    });
+    app.post('/tutorial', function(req, res) {
+        if (!req.isAuthenticated()) {
+            res.send({
+                success: false,
+                message: "Please authenticate"
+            });
+            return;
+        }
+        var tutorial = new Tutorial()
+        tutorial.label = req.body.label;
+        var now = new Date()
+        tutorial.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
+        tutorial.owner = req.user._id
+        tutorial.status = req.body.status;
+        tutorial.reference = req.body.reference
+        tutorial.order = req.body.order
+        tutorial.mkdown = req.body.mkdown;
+
+        if (!req.body.itemId) {
+            if (tutorial.order || tutorial.order == 0) {
+                Tutorial.find({ reference: tutorial.reference })
+                    .sort({ order: 1 })
+                    .exec(function(err, tutorials) {
+                        if (tutorial.order >= 0 && tutorial.order < tutorials.length) {
+                            tutorials.splice(tutorial.order, 0, tutorial)
+                            for (var i = 0; i < tutorials.length; i++) {
+                                tutorials[i].order = i
+                                tutorials[i].save()
+                                res.send({ success: true, resource: tutorial, operation: 'create' })
+                            }
+                        }
+                    })
+            } else {
+                Tutorial.find({ reference: tutorial.reference })
+                    .exec(function(err, tutorials) {
+                        tutorial.order = tutorials.length
+                        tutorial.save(function() {
+                            res.send({ success: true, resource: tutorial, operation: 'create' })
+
+                        })
+                    })
+
+
+            }
+
+        }
+        if (req.body.itemId && req.body.itemId.length > 0) {
+            Tutorial.findById(req.body.itemId, function(err, toUpdate) {
+                if (!toUpdate) {
+                    console.log("Err, tutorial with id " + req.body.itemId + " does not exists")
+                } else {
+                    console.log("Updating question " + req.body.itemId)
+                    toUpdate.label = req.body.label;
+                    toUpdate.owner = req.user._id
+                    toUpdate.status = req.body.status;
+                    toUpdate.mkdown = req.body.mkdown;
+                    toUpdate.reference = req.body.reference
+                    toUpdate.order = req.body.order
+
                     toUpdate.save(function(err) {
                         if (err) {
                             console.log(err)
@@ -300,6 +376,118 @@ module.exports = function(app, gfs) {
 
     })
 
+    app.get('/tutorial', function(req, res) {
+        if (!req.user) {
+            res.send({ success: false, 'message': 'please authenticate' })
+            return
+        }
+        if (req.query && req.query.search) {
+            Tutorial.find({ $text: { $search: req.query.search } }, function(err, results) {
+                res.send(results)
+
+            })
+            return
+        }
+
+        //   StaticMedia.find({ owner: req.user._id })
+        Tutorial.find({})
+            .sort({ reference: 1, order: 1 })
+            .exec(function(err, tutorials) {
+                for (var i = 0; i < tutorials.length; i++) {
+                    var tutorial = tutorials[i]
+                    if (tutorial.owner == req.user._id) {
+                        tutorial.readonly = "readwrite"
+                    } else {
+                        tutorial.readonly = "readonly"
+                    }
+                }
+
+                res.send(tutorials)
+            })
+
+
+    })
+    app.get('/setup_tutorial', function(req, res) {
+            if (!req.user) {
+                res.send({ success: false, 'message': 'please authenticate' })
+                return
+            }
+            User.findOne({ name: 'tutorial' })
+                .exec(function(err, tutorialUser) {
+                    gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': tutorialUser._id.toString() }).toArray(function(err, images) {
+                        for (var i = 0; i < images.length; i++) {
+                            var metadata = {
+                                owner: req.user._id.toString(),
+                                status: 'Private',
+                                typeLabel: 'Image',
+                                title:images[i].filename
+                            }
+
+                            var writestream = gfs.createWriteStream({
+                                filename: images[i].filename,
+                                mode: 'w',
+                                content_type: images[i].contentType,
+                                metadata: metadata,
+                            });
+                            var readstream = gfs.createReadStream({_id:images[i]._id}).pipe(writestream);
+
+
+                            writestream.on('close', function() {
+
+                            })
+                           // writestream.end();
+                        }
+
+                    })
+                    Badge.find({ owner: tutorialUser._id })
+                        .exec(function(err, badges) {
+                            for (var i = 0; i < badges.length; i++) {
+                                badges[i].owner = req.user._id
+                                badges[i]._id = mongoose.Types.ObjectId();
+                                badges[i].isNew = true
+                                badges[i].save()
+                            }
+                        })
+
+                    StaticMedia.find({ owner: tutorialUser._id })
+                        .exec(function(err, StaticMedias) {
+                            for (var i = 0; i < StaticMedias.length; i++) {
+                                StaticMedias[i].owner = req.user._id
+                                StaticMedias[i]._id = mongoose.Types.ObjectId();
+                                StaticMedias[i].isNew = true
+                                StaticMedias[i].save()
+                            }
+                        })
+                    res.send({ success: true, operation: 'import', resource: null })
+
+
+
+
+                })
+        }),
+        app.get('/tutorialByReference', function(req, res) {
+            if (!req.user) {
+                res.send({ success: false, 'message': 'please authenticate' })
+                return
+            }
+
+            //   StaticMedia.find({ owner: req.user._id })
+            Tutorial.aggregate([{ $group: { _id: "$reference", tuto: { $push: "$$ROOT" } } }, { $sort: { "order": 1 } }])
+                .exec(function(err, tutorials) {
+                    console.log(tutorials)
+                    for (var i = 0; i < tutorials.length; i++) {
+                        tutorials[i].tuto = tutorials[i].tuto.sort(function(a, b) {
+                            if (a.order < b.order)
+                                return -1
+                            else
+                                return 1
+                        })
+                    }
+                    res.send(tutorials)
+                })
+
+
+        })
 
     app.get('/staticmedia/:id', function(req, res) {
         if (!req.user) {
@@ -320,6 +508,13 @@ module.exports = function(app, gfs) {
             })
     });
 
+    app.delete('/tutorial/:id', function(req, res) {
+        if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
+        Tutorial.findOneAndRemove({ '_id': req.params.id },
+            function(err, doc) {
+                res.send({ success: true, resource: doc, operation: 'delete' });
+            })
+    });
 
     // Handle reception of a new free text activity designed by conceptor
     app.post('/freetextactivity', function(req, res) {
@@ -1198,9 +1393,9 @@ module.exports = function(app, gfs) {
     }
 
 
-    app.get('/userImages' , function(req,res) {
-        var targetUser=req.param('userId')
-         gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': targetUser }).toArray(function(err, images) {
+    app.get('/userImages', function(req, res) {
+        var targetUser = req.param('userId')
+        gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': targetUser }).toArray(function(err, images) {
             res.send(images)
         })
     })
@@ -1335,9 +1530,9 @@ module.exports = function(app, gfs) {
     }
 
     var removeUserImages = function(userTarget, res) {
-         gfs.files.remove({ contentType: /.*image.*/, 'metadata.owner': userTarget},function(){
+        gfs.files.remove({ contentType: /.*image.*/, 'metadata.owner': userTarget }, function() {
             res.send({ success: true, resourceType: 'Images', operation: 'bulkDelete' })
-         })
+        })
     }
 
     app.delete('/mlg/:id', function(req, res) {
