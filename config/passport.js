@@ -2,6 +2,7 @@
 var LocalStrategy = require('passport-local').Strategy;
 // load up the user model
 var User = require('../app/models/user');
+var dateFormat = require('dateformat');
 
 // load the auth variables
 module.exports = function(passport) {
@@ -35,7 +36,7 @@ module.exports = function(passport) {
         },
         function(req, name, password, done) {
             console.log('start')
-                // asynchronous
+            // asynchronous
             process.nextTick(function() {
                 User.findOne({ 'name': name }, function(err, user) {
                     // if there are any errors, return the error
@@ -50,8 +51,13 @@ module.exports = function(passport) {
                         return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.'));
 
                     // all is well, return user
-                    else
-                        return done(null, user);
+                    else {
+                        var now = new Date()
+                        user.lastLogin = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+                        user.save()
+                        return done(null, user)
+
+                    }
                 });
             });
 
@@ -82,6 +88,10 @@ module.exports = function(passport) {
                         newUser.email = req.body.email;
                         var isadmin = req.body.isadmin == "on"
                         newUser.isadmin = isadmin;
+                        var now = new Date()
+                        newUser.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+                        newUser.lastLogin = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
