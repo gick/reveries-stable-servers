@@ -414,6 +414,9 @@ module.exports = function(app, gfs) {
             }
             User.findOne({ name: 'tutorial' })
                 .exec(function(err, tutorialUser) {
+                    if(tutorialUser==null){
+                        return
+                    }
                     gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': tutorialUser._id.toString() }).toArray(function(err, images) {
                         for (var i = 0; i < images.length; i++) {
                             var metadata = {
