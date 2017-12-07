@@ -11,7 +11,7 @@ var poiSchema = mongoose.Schema({
     typeLabel: { type: String, default: 'Point of interest' },
     comment: String,
     qrcodeid: String,
-    creationDate: Date,
+    creationDate: String,
     latitude: Number,
     longitude: Number,
     photo: String,
