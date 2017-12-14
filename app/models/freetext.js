@@ -7,7 +7,7 @@ var freeTextSchema = mongoose.Schema({
     owner: String,
     status: String,
     label: String,
-    creationDate:String,
+    creationDate:Date,
 
     responseLabel: String,
     question: String,

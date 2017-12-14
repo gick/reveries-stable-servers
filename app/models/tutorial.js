@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 
 var tutorialSchema = mongoose.Schema({
     label: String,
-    creationDate: String,
+    creationDate: Date,
     reference:String,
     order:Number,
     readonly: String,

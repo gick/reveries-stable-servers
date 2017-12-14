@@ -6,8 +6,7 @@ var mcqSchema = mongoose.Schema({
     readonly: String,
     owner: String,
     status: String,    
-    creationDate:String,
-
+    creationDate:Date,
     question: String,
     distractor1: String,
     distractor2: String,

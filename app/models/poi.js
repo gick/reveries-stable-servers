@@ -3,15 +3,13 @@ var mongoose = require('mongoose');
 var poiSchema = mongoose.Schema({
     owner: String,
     readonly: String,
-    dateCreated:String,
-
     status: String,
     label: String,
     type: { type: String, default: 'poi' },
     typeLabel: { type: String, default: 'Point of interest' },
     comment: String,
     qrcodeid: String,
-    creationDate: String,
+    creationDate: Date,
     latitude: Number,
     longitude: Number,
     photo: String,

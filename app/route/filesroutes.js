@@ -56,7 +56,7 @@ module.exports = function(app, passport, gfs) {
                 owner: req.user._id.toString(),
                 status: 'Private',
                 title: part.file.name,
-                typeLabel: 'Image'
+                typeLabel: 'Image',
             }
 
             var writestream = gfs.createWriteStream({
@@ -81,37 +81,6 @@ module.exports = function(app, passport, gfs) {
     });
 
 
-
-    // handle special case of medua : qr-codes  
-    /*  app.post('/qrcode', function(req, res) {
-          if (req.isAuthenticated()) {
-              var part = req.files;
-              var writestream = gfs.createWriteStream({
-                  filename: 'qrCode',
-                  mode: 'w',
-                  content_type: part.file.mimetype,
-
-                  metadata: {
-                      creator: req.user._id,
-                      public: req.body.public === 'true',
-                      qrcode: req.body.qrcode,
-                      type: 'qrcode'
-                  }
-              });
-              writestream.write(part.file.data);
-
-              writestream.on('close', function() {
-                  res.send({
-                      success: true
-                  });
-
-              })
-              writestream.end();
-
-          } else {
-              res.send('Please authenticate first')
-          }
-      });*/
 
 
 
@@ -233,7 +202,9 @@ module.exports = function(app, passport, gfs) {
                 'metadata.poi': {
                     $exists: false
                 }
-            }).toArray(function(err, files) {
+            })
+            .sort({ uploadDate: -1 })
+            .toArray(function(err, files) {
                 for (var i = 0; i < files.length; i++) {
                     var filedata = files[i]
                     filedata.typeLabel = 'Image'

@@ -10,7 +10,6 @@ module.exports = function(app, gfs) {
     var InventoryItem = require('../models/inventoryItem.js');
     var dateFormat = require('dateformat');
     var Tutorial = require('../models/tutorial.js');
-
     var MLG = require('../models/mlg.js');
     var POI = require('../models/poi.js')
     var FreeText = require('../models/freetext.js')
@@ -29,8 +28,7 @@ module.exports = function(app, gfs) {
         var staticmedia = new StaticMedia()
         staticmedia.label = req.body.label;
         var now = new Date()
-        staticmedia.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
-
+        staticmedia.creationDate = now
         staticmedia.owner = req.user._id
         staticmedia.status = req.body.status;
         staticmedia.mkdown = req.body.mkdown;
@@ -48,7 +46,6 @@ module.exports = function(app, gfs) {
                 if (!toUpdate) {
                     console.log("Err, Freetext with id " + req.body.itemId + " does not exists")
                 } else {
-                    console.log("Updating question " + req.body.itemId)
                     toUpdate.label = req.body.label;
                     toUpdate.owner = req.user._id
                     toUpdate.status = req.body.status;
@@ -78,8 +75,7 @@ module.exports = function(app, gfs) {
         var tutorial = new Tutorial()
         tutorial.label = req.body.label;
         var now = new Date()
-        tutorial.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
-
+        tutorial.creationDate = now
         tutorial.owner = req.user._id
         tutorial.status = req.body.status;
         tutorial.reference = req.body.reference
@@ -157,7 +153,7 @@ module.exports = function(app, gfs) {
         badge.status = req.body.status;
         badge.media = req.body.badgePageId;
         var now = new Date()
-        badge.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+        badge.creationDate = now
 
         if (!req.body.itemId) {
             badge.save(function(err) {
@@ -214,6 +210,7 @@ module.exports = function(app, gfs) {
 
         //        Badge.find({ owner: req.user._id })
         Badge.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .populate('media')
             .exec(function(err, badges) {
                 for (var i = 0; i < badges.length; i++) {
@@ -256,6 +253,7 @@ module.exports = function(app, gfs) {
 
         //   InventoryItem.find({ owner: req.user._id })
         InventoryItem.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .populate('media')
             .populate('inventoryDoc')
             .exec(function(err, inventorys) {
@@ -306,7 +304,7 @@ module.exports = function(app, gfs) {
         inventory.media = req.body.itemPageId;
         inventory.inventoryDoc = req.body.itemDocPageId;
         var now = new Date()
-        inventory.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+        inventory.creationDate = now
 
         if (!req.body.itemId) {
             inventory.save(function(err) {
@@ -360,6 +358,7 @@ module.exports = function(app, gfs) {
 
         //   StaticMedia.find({ owner: req.user._id })
         StaticMedia.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .exec(function(err, staticmedias) {
                 for (var i = 0; i < staticmedias.length; i++) {
                     var staticmedia = staticmedias[i]
@@ -414,7 +413,7 @@ module.exports = function(app, gfs) {
             }
             User.findOne({ name: 'tutorial' })
                 .exec(function(err, tutorialUser) {
-                    if(tutorialUser==null){
+                    if (tutorialUser == null) {
                         return
                     }
                     gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': tutorialUser._id.toString() }).toArray(function(err, images) {
@@ -423,7 +422,7 @@ module.exports = function(app, gfs) {
                                 owner: req.user._id.toString(),
                                 status: 'Private',
                                 typeLabel: 'Image',
-                                title:images[i].filename
+                                title: images[i].filename
                             }
 
                             var writestream = gfs.createWriteStream({
@@ -432,13 +431,13 @@ module.exports = function(app, gfs) {
                                 content_type: images[i].contentType,
                                 metadata: metadata,
                             });
-                            var readstream = gfs.createReadStream({_id:images[i]._id}).pipe(writestream);
+                            var readstream = gfs.createReadStream({ _id: images[i]._id }).pipe(writestream);
 
 
                             writestream.on('close', function() {
 
                             })
-                           // writestream.end();
+                            // writestream.end();
                         }
 
                     })
@@ -539,7 +538,7 @@ module.exports = function(app, gfs) {
         newFreeText.status = req.body.status;
         newFreeText.responseLabel = req.body.responseLabel;
         var now = new Date()
-        newFreeText.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+        newFreeText.creationDate = now
 
         if (!req.body.itemId) {
             newFreeText.save(function(err) {
@@ -601,6 +600,7 @@ module.exports = function(app, gfs) {
 
         // FreeText.find({ owner: req.user._id })
         FreeText.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .populate('media')
             .exec(function(err, freetexts) {
                 for (var i = 0; i < freetexts.length; i++) {
@@ -653,7 +653,7 @@ module.exports = function(app, gfs) {
         Mcq.correctMessage = req.body.correctMessage;
         Mcq.media = req.body.mediaId;
         var now = new Date()
-        Mcq.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+        Mcq.creationDate = now
 
         //save if no mediaId
         if (!req.body.itemId) {
@@ -719,6 +719,7 @@ module.exports = function(app, gfs) {
 
         //        MCQ.find({ owner: req.user._id })
         MCQ.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .populate('media')
             .exec(function(err, mcqs) {
                 for (var i = 0; i < mcqs.length; i++) {
@@ -771,7 +772,7 @@ module.exports = function(app, gfs) {
         mlg.unitGames = req.body.unitGames
         mlg.badge = req.body.badge
         var now = new Date()
-        mlg.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+        mlg.creationDate = now
 
         mlg.save(function(err) {
             if (err) {
@@ -815,6 +816,7 @@ module.exports = function(app, gfs) {
 
         //Game.find({ owner: req.user._id })
         Game.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .populate('startMedia')
             .populate('feedbackMedia')
             .populate('POI')
@@ -970,8 +972,7 @@ module.exports = function(app, gfs) {
         game.activity2Success = activity2Success
         game.activity2Fail = activity2Fail
         var now = new Date()
-        game.creationDate = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
-
+        game.creationDate = now
         game.activity3Success = activity3Success
         game.activity3Fail = activity3Fail
         game.activityOrder = req.body.activityOrder
@@ -1073,6 +1074,7 @@ module.exports = function(app, gfs) {
 
         // MLG.find({ owner: req.user._id })
         MLG.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })            
             .deepPopulate(['startpage', 'badge', 'unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities', 'unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
             .exec(function(err, mlgs) {
                 for (var i = 0; i < mlgs.length; i++) {
@@ -1233,7 +1235,6 @@ module.exports = function(app, gfs) {
             return;
         }
         var now = new Date()
-        var date = dateFormat(now, "dddd, mmmm dS, yyyy, h:MM:ss TT");
 
         var condition = {
             '_id': req.user._id
@@ -1241,8 +1242,9 @@ module.exports = function(app, gfs) {
         var poi = {
             owner: req.user._id,
             status: req.body.status,
+            comment: req.body.comment,
             label: req.body.label,
-            creationDate: date,
+            creationDate: now,
             label: req.body.label,
             latitude: req.body.latitude,
             longitude: req.body.longitude,
@@ -1324,6 +1326,7 @@ module.exports = function(app, gfs) {
         } else
             //POI.find({ owner: req.user._id }) 
             POI.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
+            .sort({ creationDate: -1 })
             .exec(function(err, pois) {
                 for (var i = 0; i < pois.length; i++) {
                     var poi = pois[i]

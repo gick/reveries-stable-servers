@@ -2,8 +2,7 @@ var mongoose = require('mongoose');
 
 var staticmediaSchema = mongoose.Schema({
     label: String,
-    creationDate: String,
-
+    creationDate: Date,
     readonly: String,
     owner: String,
     type: { type: String, default: 'staticmedia' },
