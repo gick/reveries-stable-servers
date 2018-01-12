@@ -460,6 +460,46 @@ module.exports = function(app, gfs) {
                                 StaticMedias[i].save()
                             }
                         })
+                        MCQ.find({ owner: tutorialUser._id })
+                        .exec(function(err, Mcqs) {
+                            for (var i = 0; i < Mcqs.length; i++) {
+                                Mcqs[i].owner = req.user._id
+                                Mcqs[i]._id = mongoose.Types.ObjectId();
+                                Mcqs[i].isNew = true
+                                Mcqs[i].save()
+                            }
+                        })
+                        POI.find({ owner: tutorialUser._id })
+                        .exec(function(err, Pois) {
+                            for (var i = 0; i < Pois.length; i++) {
+                                Pois[i].owner = req.user._id
+                                Pois[i]._id = mongoose.Types.ObjectId();
+                                Pois[i].isNew = true
+                                Pois[i].save()
+                            }
+                        })
+
+
+                        Game.find({ owner: tutorialUser._id })
+                        .exec(function(err, Games) {
+                            for (var i = 0; i < Games.length; i++) {
+                                Games[i].owner = req.user._id
+                                Games[i]._id = mongoose.Types.ObjectId();
+                                Games[i].isNew = true
+                                Games[i].save()
+                            }
+                        })
+
+                        MLG.find({ owner: tutorialUser._id })
+                        .exec(function(err, Mlgs) {
+                            for (var i = 0; i < Mlgs.length; i++) {
+                                Mlgs[i].owner = req.user._id
+                                Mlgs[i]._id = mongoose.Types.ObjectId();
+                                Mlgs[i].isNew = true
+                                Mlgs[i].save()
+                            }
+                        })
+
                     res.send({ success: true, operation: 'import', resource: null })
 
 

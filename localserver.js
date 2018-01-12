@@ -9,8 +9,8 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var flash    = require('connect-flash');
 var Grid = require('gridfs-stream');
-
-var morgan       = require('morgan');
+var expressWinston=require('express-winston')
+var winston       = require('winston');
 var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
@@ -23,7 +23,6 @@ Grid.mongo = mongoose.mongo;
 mongoose.connect(configDB[0].url); // connect to our database
 require('./config/passport.js')(passport); // pass passport for configuration
 
-app.use(morgan('dev')); // log every request to the console
 app.use(cookieParser()); // read cookies (needed for auth)
 app.use(bodyParser.json()); // get information from html forms
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -36,7 +35,31 @@ app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 var gfs = new Grid(mongoose.connection.db);
 
+expressWinston.requestWhitelist.push('body');
+expressWinston.responseWhitelist.push('body');
 
+app.use(expressWinston.logger({
+    transports: [
+        new winston.transports.Console({
+            colorize: true
+        }),
+        new winston.transports.File({
+            name: 'access-file',
+            filename: 'access-log.log'
+        })
+    ],
+    ignoreRoute: function(req) {
+        return (req.url.indexOf('bower') !== -1);
+    },
+    meta: true, 
+    msg: "HTTP {{req.method}} {{req.url}}",
+    skip: function (req, res) { 
+        if (res && res.body && res.body.operation)
+         { return false }; 
+        return true
+        }, // A function to determine if logging is skipped, defaults to returning false. Called _after_ response has already been sent.
+    colorStatus: true
+}));
 
 
 // routes ======================================================================
