@@ -35,7 +35,6 @@ app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 var gfs = new Grid(mongoose.connection.db);
 
-expressWinston.requestWhitelist.push('body');
 expressWinston.responseWhitelist.push('body');
 
 app.use(expressWinston.logger({
