@@ -500,6 +500,17 @@ module.exports = function(app, gfs) {
                             }
                         })
 
+
+                        FreeText.find({ owner: tutorialUser._id })
+                        .exec(function(err, Freetexts) {
+                            for (var i = 0; i < Freetexts.length; i++) {
+                                Freetexts[i].owner = req.user._id
+                                Freetexts[i]._id = mongoose.Types.ObjectId();
+                                Freetexts[i].isNew = true
+                                Freetexts[i].save()
+                            }
+                        })
+
                     res.send({ success: true, operation: 'import', resource: null })
 
 
