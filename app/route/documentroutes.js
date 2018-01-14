@@ -411,7 +411,7 @@ module.exports = function(app, gfs) {
                 res.send({ success: false, 'message': 'please authenticate' })
                 return
             }
-            User.findOne({ name: 'tutorial' })
+            User.findOne({ name: 'Sanchez' })
                 .exec(function(err, tutorialUser) {
                     if (tutorialUser == null) {
                         return
