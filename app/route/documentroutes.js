@@ -1593,17 +1593,10 @@ module.exports = function(app, gfs) {
     }
 
     app.delete('/mlg/:id', function(req, res) {
-        var callback = function(err, numberAffected) {
-            if (err) {
-                res.send({
-                    success: false
-                })
-            } else res.send({
-                success: true,
-                number: numberAffected
-            });
-        };
-        MLG.find({ _id: req.params.id }).remove(callback)
+        MLG.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
+            function(err, doc) {
+                res.send({ success: true, resource: doc, operation: 'delete' });
+            })
 
     })
     //self explaining
