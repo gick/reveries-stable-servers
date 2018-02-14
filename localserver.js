@@ -33,39 +33,15 @@ app.use(session({ secret: 'ilovescotchscotchyscotchscotch' })); // session secre
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
+console.log(mongoose.connection)
 var gfs = new Grid(mongoose.connection.db);
-
-expressWinston.responseWhitelist.push('body');
-
-app.use(expressWinston.logger({
-    transports: [
-        new winston.transports.Console({
-            colorize: true
-        }),
-        new winston.transports.File({
-            name: 'access-file',
-            filename: 'access-log.log'
-        })
-    ],
-    ignoreRoute: function(req) {
-        return (req.url.indexOf('bower') !== -1);
-    },
-    meta: true, 
-    msg: "HTTP {{req.method}} {{req.url}}",
-    skip: function (req, res) { 
-        if (res && res.body && res.body.operation)
-         { return false }; 
-        return true
-        }, // A function to determine if logging is skipped, defaults to returning false. Called _after_ response has already been sent.
-    colorStatus: true
-}));
 
 
 // routes ======================================================================
 require('./app/route/routes.js')(app, passport,webdir); // load our routes and pass in our app and fully configured passport
 require('./app/route/filesroutes.js')(app, passport,gfs);
 require('./app/route/documentroutes.js')(app,gfs);
-//require('./app/route/imageAnalysisRoute.js')(app, gfs,passport); 
+//require('./app/route/imageAnalysisRoute.js')(app, gfs,passport);
 
 // launch ======================================================================
 app.listen(port);
