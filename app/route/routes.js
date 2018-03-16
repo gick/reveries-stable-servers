@@ -7,7 +7,7 @@ module.exports = function(app, passport, webdir) {
 	var crypto = require('crypto')
 	var async = require('async')
 
-	app.use(express.static(webdir))
+	app.use(express.static(webdir,{maxage:'2h'}))
 
 	app.post('/reset/:token', function(req, res) {
 		async.waterfall([
