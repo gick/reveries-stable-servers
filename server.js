@@ -21,41 +21,23 @@ var passport = require('passport')
 var flash    = require('connect-flash')
 var Grid = require('gridfs-stream')
 
-var expressWinston=require('express-winston')
-var winston       = require('winston')
+var winston = require('winston')
 var cookieParser = require('cookie-parser')
 var bodyParser   = require('body-parser')
 var session      = require('express-session')
 var busboyBodyParser = require('busboy-body-parser')
 var configDB = require('./config/database.js')
 var webdir = require('./config/config.js')
-Grid.mongo = mongoose.mongo
 // configuration ===============================================================
-expressWinston.responseWhitelist.push('body')
-
-app.use(expressWinston.logger({
+//Logger used to track activity and error
+var logger = new winston.Logger({
 	transports: [
-		new winston.transports.Console({
-			colorize: true
-		}),
-		new winston.transports.File({
-			name: 'access-file',
-			filename: 'access-log.log'
-		})
-	],
-	ignoreRoute: function(req) {
-		return (req.url.indexOf('bower') !== -1)
-	},
-	meta: true, 
-	msg: 'HTTP {{req.method}} {{req.url}}',
-	skip: function (req, res) { 
-		if (res && res.body && res.body.operation)
-		{ return false } 
-		return true
-	}, // A function to determine if logging is skipped, defaults to returning false. Called _after_ response has already been sent.
-	colorStatus: true
-}))
+		new (winston.transports.File)({ filename: 'problem.log' })
+	]
+})
 
+
+Grid.mongo = mongoose.mongo
 
 mongoose.connect(configDB[0].url) // connect to our database
 require('./config/passport.js')(passport) // pass passport for configuration

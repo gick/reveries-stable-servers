@@ -520,16 +520,11 @@ module.exports = function(app, gfs, logger) {
 			})
 	}),
 	app.get('/tutorialByReference', function(req, res) {
-		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
-			return
-		}
-
 		//   StaticMedia.find({ owner: req.user._id })
 		Tutorial.aggregate([{ $group: { _id: '$reference', tuto: { $push: '$$ROOT' } } }, { $sort: { 'order': 1 } }])
 			.exec(function(err, tutorials) {
 				if(tutorials===undefined){
-					return
+					return res.send(err)
 				}
 				for (var i = 0; i < tutorials.length; i++) {
 					tutorials[i].tuto = tutorials[i].tuto.sort(function(a, b) {
