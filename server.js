@@ -65,8 +65,8 @@ require('./app/route/documentroutes.js')(app,gfs)
 
 // launch ======================================================================
 var secureServer = https.createServer({
-	key: fs.readFileSync('/etc/letsencrypt/keys/0000_key-certbot.pem'),
-	cert: fs.readFileSync('/etc/letsencrypt/csr/0000_csr-certbot.pem')
+	key: fs.readFileSync('/etc/letsencrypt/live/conception.reveries-project.fr/privkey.pem'),
+	cert: fs.readFileSync('/etc/letsencrypt/live/conception.reveries-project.fr/cert.pem')
 }, app)
 	.listen(HTTPS_PORT, function () {
 		console.log('Secure Server listening on port ' + HTTPS_PORT)
