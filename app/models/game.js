@@ -1,6 +1,7 @@
 // load the things we need
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
+var deepPopulate = require('mongoose-deep-populate')(mongoose);
 
 // define the schema for our user model
 /*
@@ -50,5 +51,6 @@ var gameSchema = mongoose.Schema({
 });
 
 // generating a hash
+gameSchema.plugin(deepPopulate,{})
 
 module.exports = mongoose.model('Game', gameSchema);

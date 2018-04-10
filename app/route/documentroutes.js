@@ -1,4 +1,4 @@
-module.exports = function(app, gfs, logger) {
+module.exports = function (app, gfs, logger) {
 	var spawn = require('child_process').spawn
 
 	var mongoose = require('mongoose')
@@ -16,7 +16,7 @@ module.exports = function(app, gfs, logger) {
 	var StaticMedia = require('../models/staticmedia.js')
 
 	// Handle reception of a new static media
-	app.post('/staticmedia', function(req, res) {
+	app.post('/staticmedia', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -33,32 +33,43 @@ module.exports = function(app, gfs, logger) {
 		staticmedia.mkdown = req.body.mkdown
 		if (!req.body.itemId) {
 
-			staticmedia.save(function(err,resource) {
+			staticmedia.save(function (err, resource) {
 				if (err) {
 					logger.log('error', 'Error while saving static media %s', err.message)
-					res.send({ success: false })
-				} else
-				{
-					logger.log('info','Static media created %s',JSON.stringify(resource))
-					res.send({ success: true, resource: staticmedia, operation: 'create' })
-                    
+					res.send({
+						success: false
+					})
+				} else {
+					logger.log('info', 'Static media created %s', JSON.stringify(resource))
+					res.send({
+						success: true,
+						resource: staticmedia,
+						operation: 'create'
+					})
+
 				}
 			})
 		}
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			StaticMedia.findById(req.body.itemId, function(err, toUpdate) {
+			StaticMedia.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, Freetext with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, Freetext with id ' + req.body.itemId + ' does not exists')
 				} else {
 					toUpdate.label = req.body.label
 					toUpdate.owner = req.user._id
 					toUpdate.status = req.body.status
 					toUpdate.mkdown = req.body.mkdown
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
 							logger.log('error', 'Error while updating static media %s', err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -68,7 +79,7 @@ module.exports = function(app, gfs, logger) {
 		}
 
 	})
-	app.post('/tutorial', function(req, res) {
+	app.post('/tutorial', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -88,24 +99,38 @@ module.exports = function(app, gfs, logger) {
 
 		if (!req.body.itemId) {
 			if (tutorial.order || tutorial.order == 0) {
-				Tutorial.find({ reference: tutorial.reference })
-					.sort({ order: 1 })
-					.exec(function(err, tutorials) {
+				Tutorial.find({
+						reference: tutorial.reference
+					})
+					.sort({
+						order: 1
+					})
+					.exec(function (err, tutorials) {
 						if (tutorial.order >= 0 && tutorial.order < tutorials.length) {
 							tutorials.splice(tutorial.order, 0, tutorial)
 							for (var i = 0; i < tutorials.length; i++) {
 								tutorials[i].order = i
 								tutorials[i].save()
-								res.send({ success: true, resource: tutorial, operation: 'create' })
+								res.send({
+									success: true,
+									resource: tutorial,
+									operation: 'create'
+								})
 							}
 						}
 					})
 			} else {
-				Tutorial.find({ reference: tutorial.reference })
-					.exec(function(err, tutorials) {
+				Tutorial.find({
+						reference: tutorial.reference
+					})
+					.exec(function (err, tutorials) {
 						tutorial.order = tutorials.length
-						tutorial.save(function() {
-							res.send({ success: true, resource: tutorial, operation: 'create' })
+						tutorial.save(function () {
+							res.send({
+								success: true,
+								resource: tutorial,
+								operation: 'create'
+							})
 
 						})
 					})
@@ -115,11 +140,11 @@ module.exports = function(app, gfs, logger) {
 
 		}
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			Tutorial.findById(req.body.itemId, function(err, toUpdate) {
+			Tutorial.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, tutorial with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, tutorial with id ' + req.body.itemId + ' does not exists')
 				} else {
-					logger.log('info','Updating tutorial %s',JSON.stringify(toUpdate))
+					logger.log('info', 'Updating tutorial %s', JSON.stringify(toUpdate))
 					toUpdate.label = req.body.label
 					toUpdate.owner = req.user._id
 					toUpdate.status = req.body.status
@@ -127,11 +152,17 @@ module.exports = function(app, gfs, logger) {
 					toUpdate.reference = req.body.reference
 					toUpdate.order = req.body.order
 
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
-							logger.log('error','Error while saving tutorial %s',err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							logger.log('error', 'Error while saving tutorial %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -142,7 +173,7 @@ module.exports = function(app, gfs, logger) {
 
 	})
 
-	app.post('/badge', function(req, res) {
+	app.post('/badge', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -160,30 +191,42 @@ module.exports = function(app, gfs, logger) {
 		badge.creationDate = now
 
 		if (!req.body.itemId) {
-			badge.save(function(err) {
+			badge.save(function (err) {
 				if (err) {
-					logger.log('error','Error while saving badge %s',err.message)
-					res.send({ success: false })
-				} else res.send({ success: true, resource: badge, operation: 'create' })
+					logger.log('error', 'Error while saving badge %s', err.message)
+					res.send({
+						success: false
+					})
+				} else res.send({
+					success: true,
+					resource: badge,
+					operation: 'create'
+				})
 			})
 		}
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			Badge.findById(req.body.itemId, function(err, toUpdate) {
+			Badge.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, Badge with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, Badge with id ' + req.body.itemId + ' does not exists')
 				} else {
-					logger.log('info','Updating badge %s' , JSON.stringify(toUpdate))
+					logger.log('info', 'Updating badge %s', JSON.stringify(toUpdate))
 					toUpdate.label = req.body.label
 					toUpdate.badgeText = req.body.badgeText
 
 					toUpdate.owner = req.user._id
 					toUpdate.status = req.body.status
 					toUpdate.media = req.body.badgePageId
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
-							logger.log('error','Error while updating badge %s',err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							logger.log('error', 'Error while updating badge %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -194,26 +237,41 @@ module.exports = function(app, gfs, logger) {
 
 	})
 
-	app.get('/badge', function(req, res) {
+	app.get('/badge', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 			return
 		}
 
 		if (req.query && req.query.search) {
-			Badge.find({ $text: { $search: req.query.search } })
+			Badge.find({
+					$text: {
+						$search: req.query.search
+					}
+				})
 				.populate('media')
-				.exec(function(err, results) {
+				.exec(function (err, results) {
 					res.send(results)
 
 				})
 			return
 		}
-        
-		Badge.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })
+
+		Badge.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
 			.populate('media')
-			.exec(function(err, badges) {
+			.exec(function (err, badges) {
 				for (var i = 0; i < badges.length; i++) {
 					var badge = badges[i]
 					if (badge.owner == req.user._id) {
@@ -225,24 +283,43 @@ module.exports = function(app, gfs, logger) {
 				res.send(badges)
 			})
 	})
-	app.delete('/badge/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		Badge.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/badge/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		Badge.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 	})
-	app.get('/inventory', function(req, res) {
+	app.get('/inventory', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 			return
 		}
 
 		if (req.query && req.query.search) {
-			InventoryItem.find({ $text: { $search: req.query.search } })
+			InventoryItem.find({
+					$text: {
+						$search: req.query.search
+					}
+				})
 				.populate('media')
 				.populate('inventoryDoc')
-				.exec(function(err, results) {
+				.exec(function (err, results) {
 					res.send(results)
 
 				})
@@ -253,11 +330,19 @@ module.exports = function(app, gfs, logger) {
 
 
 		//   InventoryItem.find({ owner: req.user._id })
-		InventoryItem.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })
+		InventoryItem.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
 			.populate('media')
 			.populate('inventoryDoc')
-			.exec(function(err, inventorys) {
+			.exec(function (err, inventorys) {
 				for (var i = 0; i < inventorys.length; i++) {
 					var inventory = inventorys[i]
 					if (inventory.owner == req.user._id) {
@@ -270,26 +355,38 @@ module.exports = function(app, gfs, logger) {
 			})
 	})
 
-	app.get('/inventory/:id', function(req, res) {
+	app.get('/inventory/:id', function (req, res) {
 		InventoryItem.findOne({
-			'_id': req.params.id
-		})
+				'_id': req.params.id
+			})
 			.populate('media')
 			.populate('inventoryDoc')
 
-			.exec(function(err, item) {
+			.exec(function (err, item) {
 				res.send(item)
 			})
 	})
 
-	app.delete('/inventory/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		InventoryItem.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/inventory/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		InventoryItem.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 	})
-	app.post('/inventory', function(req, res) {
+	app.post('/inventory', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -308,30 +405,42 @@ module.exports = function(app, gfs, logger) {
 		inventory.creationDate = now
 
 		if (!req.body.itemId) {
-			inventory.save(function(err) {
+			inventory.save(function (err) {
 				if (err) {
-					logger.log('error','Error while saving inventory %s',err.message)
-					res.send({ success: false })
-				} else res.send({ success: true, resource: inventory, operation: 'create' })
+					logger.log('error', 'Error while saving inventory %s', err.message)
+					res.send({
+						success: false
+					})
+				} else res.send({
+					success: true,
+					resource: inventory,
+					operation: 'create'
+				})
 			})
 		}
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			InventoryItem.findById(req.body.itemId, function(err, toUpdate) {
+			InventoryItem.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, inventory item with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, inventory item with id ' + req.body.itemId + ' does not exists')
 				} else {
-					logger.log('info','Updating inventory item %s',JSON.stringify(toUpdate))
+					logger.log('info', 'Updating inventory item %s', JSON.stringify(toUpdate))
 					toUpdate.label = req.body.label
 					toUpdate.itemText = req.body.itemText
 					toUpdate.owner = req.user._id
 					toUpdate.status = req.body.status
 					toUpdate.media = req.body.itemPageId
 					toUpdate.inventoryDoc = req.body.itemDocPageId
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
-							logger.log('error','Error while updating inventory item %s',err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							logger.log('error', 'Error while updating inventory item %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -344,13 +453,20 @@ module.exports = function(app, gfs, logger) {
 
 
 
-	app.get('/staticmedia', function(req, res) {
+	app.get('/staticmedia', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 			return
 		}
 		if (req.query && req.query.search) {
-			StaticMedia.find({ $text: { $search: req.query.search } }, function(err, results) {
+			StaticMedia.find({
+				$text: {
+					$search: req.query.search
+				}
+			}, function (err, results) {
 				res.send(results)
 
 			})
@@ -358,9 +474,17 @@ module.exports = function(app, gfs, logger) {
 		}
 
 		//   StaticMedia.find({ owner: req.user._id })
-		StaticMedia.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })
-			.exec(function(err, staticmedias) {
+		StaticMedia.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
+			.exec(function (err, staticmedias) {
 				for (var i = 0; i < staticmedias.length; i++) {
 					var staticmedia = staticmedias[i]
 					if (staticmedia.owner == req.user._id) {
@@ -376,13 +500,20 @@ module.exports = function(app, gfs, logger) {
 
 	})
 
-	app.get('/tutorial', function(req, res) {
+	app.get('/tutorial', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 			return
 		}
 		if (req.query && req.query.search) {
-			Tutorial.find({ $text: { $search: req.query.search } }, function(err, results) {
+			Tutorial.find({
+				$text: {
+					$search: req.query.search
+				}
+			}, function (err, results) {
 				res.send(results)
 
 			})
@@ -391,8 +522,11 @@ module.exports = function(app, gfs, logger) {
 
 		//   StaticMedia.find({ owner: req.user._id })
 		Tutorial.find({})
-			.sort({ reference: 1, order: 1 })
-			.exec(function(err, tutorials) {
+			.sort({
+				reference: 1,
+				order: 1
+			})
+			.exec(function (err, tutorials) {
 				for (var i = 0; i < tutorials.length; i++) {
 					var tutorial = tutorials[i]
 					if (tutorial.owner == req.user._id) {
@@ -407,168 +541,235 @@ module.exports = function(app, gfs, logger) {
 
 
 	})
-	app.get('/setup_tutorial', function(req, res) {
-		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
-			return
-		}
-		User.findOne({ name: 'tutorial' })
-			.exec(function(err, tutorialUser) {
-				if (tutorialUser == null) {
-					return
-				}
-				gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': tutorialUser._id.toString() }).toArray(function(err, images) {
-					for (var i = 0; i < images.length; i++) {
-						var metadata = {
-							owner: req.user._id.toString(),
-							status: 'Private',
-							typeLabel: 'Image',
-							title: images[i].filename
+	app.get('/setup_tutorial', function (req, res) {
+			if (!req.user) {
+				res.send({
+					success: false,
+					'message': 'please authenticate'
+				})
+				return
+			}
+			User.findOne({
+					name: 'tutorial'
+				})
+				.exec(function (err, tutorialUser) {
+					if (tutorialUser == null) {
+						return
+					}
+					gfs.files.find({
+						contentType: /.*image.*/,
+						'metadata.owner': tutorialUser._id.toString()
+					}).toArray(function (err, images) {
+						for (var i = 0; i < images.length; i++) {
+							var metadata = {
+								owner: req.user._id.toString(),
+								status: 'Private',
+								typeLabel: 'Image',
+								title: images[i].filename
+							}
+
+							var writestream = gfs.createWriteStream({
+								filename: images[i].filename,
+								mode: 'w',
+								content_type: images[i].contentType,
+								metadata: metadata,
+							})
+							var readstream = gfs.createReadStream({
+								_id: images[i]._id
+							}).pipe(writestream)
+
+
+							writestream.on('close', function () {
+
+							})
+							// writestream.end();
 						}
 
-						var writestream = gfs.createWriteStream({
-							filename: images[i].filename,
-							mode: 'w',
-							content_type: images[i].contentType,
-							metadata: metadata,
+					})
+					Badge.find({
+							owner: tutorialUser._id
 						})
-						var readstream = gfs.createReadStream({ _id: images[i]._id }).pipe(writestream)
-
-
-						writestream.on('close', function() {
-
+						.exec(function (err, badges) {
+							for (var i = 0; i < badges.length; i++) {
+								badges[i].owner = req.user._id
+								badges[i]._id = mongoose.Types.ObjectId()
+								badges[i].isNew = true
+								badges[i].save()
+							}
 						})
-						// writestream.end();
-					}
+
+					StaticMedia.find({
+							owner: tutorialUser._id
+						})
+						.exec(function (err, StaticMedias) {
+							for (var i = 0; i < StaticMedias.length; i++) {
+								StaticMedias[i].owner = req.user._id
+								StaticMedias[i]._id = mongoose.Types.ObjectId()
+								StaticMedias[i].isNew = true
+								StaticMedias[i].save()
+							}
+						})
+					MCQ.find({
+							owner: tutorialUser._id
+						})
+						.exec(function (err, Mcqs) {
+							for (var i = 0; i < Mcqs.length; i++) {
+								Mcqs[i].owner = req.user._id
+								Mcqs[i]._id = mongoose.Types.ObjectId()
+								Mcqs[i].isNew = true
+								Mcqs[i].save()
+							}
+						})
+					POI.find({
+							owner: tutorialUser._id
+						})
+						.exec(function (err, Pois) {
+							for (var i = 0; i < Pois.length; i++) {
+								Pois[i].owner = req.user._id
+								Pois[i]._id = mongoose.Types.ObjectId()
+								Pois[i].isNew = true
+								Pois[i].save()
+							}
+						})
+
+
+					Game.find({
+							owner: tutorialUser._id
+						})
+						.exec(function (err, Games) {
+							for (var i = 0; i < Games.length; i++) {
+								Games[i].owner = req.user._id
+								Games[i]._id = mongoose.Types.ObjectId()
+								Games[i].isNew = true
+								Games[i].save()
+							}
+						})
+
+					MLG.find({
+							owner: tutorialUser._id
+						})
+						.exec(function (err, Mlgs) {
+							for (var i = 0; i < Mlgs.length; i++) {
+								Mlgs[i].owner = req.user._id
+								Mlgs[i]._id = mongoose.Types.ObjectId()
+								Mlgs[i].isNew = true
+								Mlgs[i].save()
+							}
+						})
+
+
+					FreeText.find({
+							owner: tutorialUser._id
+						})
+						.exec(function (err, Freetexts) {
+							for (var i = 0; i < Freetexts.length; i++) {
+								Freetexts[i].owner = req.user._id
+								Freetexts[i]._id = mongoose.Types.ObjectId()
+								Freetexts[i].isNew = true
+								Freetexts[i].save()
+							}
+						})
+
+					res.send({
+						success: true,
+						operation: 'import',
+						resource: null
+					})
+
+
+
 
 				})
-				Badge.find({ owner: tutorialUser._id })
-					.exec(function(err, badges) {
-						for (var i = 0; i < badges.length; i++) {
-							badges[i].owner = req.user._id
-							badges[i]._id = mongoose.Types.ObjectId()
-							badges[i].isNew = true
-							badges[i].save()
+		}),
+		app.get('/tutorialByReference', function (req, res) {
+			//   StaticMedia.find({ owner: req.user._id })
+			Tutorial.aggregate([{
+					$group: {
+						_id: '$reference',
+						tuto: {
+							$push: '$$ROOT'
 						}
-					})
-
-				StaticMedia.find({ owner: tutorialUser._id })
-					.exec(function(err, StaticMedias) {
-						for (var i = 0; i < StaticMedias.length; i++) {
-							StaticMedias[i].owner = req.user._id
-							StaticMedias[i]._id = mongoose.Types.ObjectId()
-							StaticMedias[i].isNew = true
-							StaticMedias[i].save()
-						}
-					})
-				MCQ.find({ owner: tutorialUser._id })
-					.exec(function(err, Mcqs) {
-						for (var i = 0; i < Mcqs.length; i++) {
-							Mcqs[i].owner = req.user._id
-							Mcqs[i]._id = mongoose.Types.ObjectId()
-							Mcqs[i].isNew = true
-							Mcqs[i].save()
-						}
-					})
-				POI.find({ owner: tutorialUser._id })
-					.exec(function(err, Pois) {
-						for (var i = 0; i < Pois.length; i++) {
-							Pois[i].owner = req.user._id
-							Pois[i]._id = mongoose.Types.ObjectId()
-							Pois[i].isNew = true
-							Pois[i].save()
-						}
-					})
+					}
+				}, {
+					$sort: {
+						'order': 1
+					}
+				}])
+				.exec(function (err, tutorials) {
+					if (tutorials === undefined) {
+						return res.send(err)
+					}
+					for (var i = 0; i < tutorials.length; i++) {
+						tutorials[i].tuto = tutorials[i].tuto.sort(function (a, b) {
+							if (a.order < b.order)
+								return -1
+							else
+								return 1
+						})
+					}
+					res.send(tutorials)
+				})
 
 
-				Game.find({ owner: tutorialUser._id })
-					.exec(function(err, Games) {
-						for (var i = 0; i < Games.length; i++) {
-							Games[i].owner = req.user._id
-							Games[i]._id = mongoose.Types.ObjectId()
-							Games[i].isNew = true
-							Games[i].save()
-						}
-					})
+		})
 
-				MLG.find({ owner: tutorialUser._id })
-					.exec(function(err, Mlgs) {
-						for (var i = 0; i < Mlgs.length; i++) {
-							Mlgs[i].owner = req.user._id
-							Mlgs[i]._id = mongoose.Types.ObjectId()
-							Mlgs[i].isNew = true
-							Mlgs[i].save()
-						}
-					})
-
-
-				FreeText.find({ owner: tutorialUser._id })
-					.exec(function(err, Freetexts) {
-						for (var i = 0; i < Freetexts.length; i++) {
-							Freetexts[i].owner = req.user._id
-							Freetexts[i]._id = mongoose.Types.ObjectId()
-							Freetexts[i].isNew = true
-							Freetexts[i].save()
-						}
-					})
-
-				res.send({ success: true, operation: 'import', resource: null })
-
-
-
-
-			})
-	}),
-	app.get('/tutorialByReference', function(req, res) {
-		//   StaticMedia.find({ owner: req.user._id })
-		Tutorial.aggregate([{ $group: { _id: '$reference', tuto: { $push: '$$ROOT' } } }, { $sort: { 'order': 1 } }])
-			.exec(function(err, tutorials) {
-				if(tutorials===undefined){
-					return res.send(err)
-				}
-				for (var i = 0; i < tutorials.length; i++) {
-					tutorials[i].tuto = tutorials[i].tuto.sort(function(a, b) {
-						if (a.order < b.order)
-							return -1
-						else
-							return 1
-					})
-				}
-				res.send(tutorials)
-			})
-
-
-	})
-
-	app.get('/staticmedia/:id', function(req, res) {
+	app.get('/staticmedia/:id', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 		} else
-			StaticMedia.findOne({ '_id': req.params.id },
-				function(err, doc) {
+			StaticMedia.findOne({
+					'_id': req.params.id
+				},
+				function (err, doc) {
 					res.send(doc)
 				})
 	})
 
 
-	app.delete('/staticmedia/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		StaticMedia.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/staticmedia/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		StaticMedia.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 	})
 
-	app.delete('/tutorial/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		Tutorial.findOneAndRemove({ '_id': req.params.id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/tutorial/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		Tutorial.findOneAndRemove({
+				'_id': req.params.id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 	})
 
 	// Handle reception of a new free text activity designed by conceptor
-	app.post('/freetextactivity', function(req, res) {
+	app.post('/freetextactivity', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -590,21 +791,27 @@ module.exports = function(app, gfs, logger) {
 		newFreeText.creationDate = now
 
 		if (!req.body.itemId) {
-			newFreeText.save(function(err) {
+			newFreeText.save(function (err) {
 				if (err) {
-					logger.log('error','Error while saving freetext %s',err.message)
+					logger.log('error', 'Error while saving freetext %s', err.message)
 
-					res.send({ success: false })
-				} else res.send({ success: true, resource: newFreeText, operation: 'create' })
+					res.send({
+						success: false
+					})
+				} else res.send({
+					success: true,
+					resource: newFreeText,
+					operation: 'create'
+				})
 			})
 		}
 
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			FreeText.findById(req.body.itemId, function(err, toUpdate) {
+			FreeText.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, Freetext with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, Freetext with id ' + req.body.itemId + ' does not exists')
 				} else {
-					logger.log('info','Updating question %s' , JSON.stringify(toUpdate))
+					logger.log('info', 'Updating question %s', JSON.stringify(toUpdate))
 					toUpdate.question = req.body.question
 					toUpdate.label = req.body.label
 					toUpdate.response = req.body.response
@@ -613,11 +820,17 @@ module.exports = function(app, gfs, logger) {
 					toUpdate.media = req.body.mediaIdconsole
 					toUpdate.owner = req.user._id
 					toUpdate.status = req.body.status
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
-							logger.log('error','Error while updating freetext %s',err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							logger.log('error', 'Error while updating freetext %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -630,16 +843,23 @@ module.exports = function(app, gfs, logger) {
 
 
 
-	app.get('/freetextactivity', function(req, res) {
+	app.get('/freetextactivity', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 			return
 		}
 
 		if (req.query && req.query.search) {
-			FreeText.find({ $text: { $search: req.query.search } })
+			FreeText.find({
+					$text: {
+						$search: req.query.search
+					}
+				})
 				.populate('media')
-				.exec(function(err, results) {
+				.exec(function (err, results) {
 					res.send(results)
 
 				})
@@ -649,10 +869,18 @@ module.exports = function(app, gfs, logger) {
 
 
 		// FreeText.find({ owner: req.user._id })
-		FreeText.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })
+		FreeText.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
 			.populate('media')
-			.exec(function(err, freetexts) {
+			.exec(function (err, freetexts) {
 				for (var i = 0; i < freetexts.length; i++) {
 					var freetext = freetexts[i]
 					if (freetext.owner == req.user._id) {
@@ -667,23 +895,37 @@ module.exports = function(app, gfs, logger) {
 	})
 
 
-	app.get('/freetext/:id', function(req, res) {
+	app.get('/freetext/:id', function (req, res) {
 
-		FreeText.findOne({ '_id': req.params.id }, function(err, freetext) {
+		FreeText.findOne({
+			'_id': req.params.id
+		}, function (err, freetext) {
 			res.send(freetext)
 		})
 	})
 
-	app.delete('/freetextactivity/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		FreeText.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/freetextactivity/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		FreeText.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 	})
-
+	//TODO Refactor 
 	// Handle reception of a new mcq activity designed by conceptor
-	app.post('/mcq', function(req, res) {
+	app.post('/mcq', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -693,11 +935,20 @@ module.exports = function(app, gfs, logger) {
 		}
 		var Mcq = new MCQ()
 		Mcq.owner = req.user._id
+		Mcq.imageMode = req.body.imageMode
 		Mcq.status = req.body.status
 		Mcq.label = req.body.label
 		Mcq.question = req.body.question
 		Mcq.distractor1 = req.body.distractor1
 		Mcq.distractor2 = req.body.distractor2
+		if (req.body.distractors) {
+			Mcq.distractor = []
+			for (var i = 0; i < req.body.distractors.length; i++) {
+				Mcq.distractors.push({
+					value: req.body.distractors[i]
+				})
+			}
+		}
 		Mcq.response = req.body.response
 		Mcq.wrongMessage = req.body.wrongMessage
 		Mcq.correctMessage = req.body.correctMessage
@@ -707,36 +958,56 @@ module.exports = function(app, gfs, logger) {
 
 		//save if no mediaId
 		if (!req.body.itemId) {
-			Mcq.save(function(err) {
+			Mcq.save(function (err) {
 				if (err) {
-					logger.log('error','Error while saving MCQ %s',err.message)
-					res.send({ success: false })
-				} else res.send({ success: true, resource: Mcq, operation: 'create' })
+					logger.log('error', 'Error while saving MCQ %s', err.message)
+					res.send({
+						success: false
+					})
+				} else res.send({
+					success: true,
+					resource: Mcq,
+					operation: 'create'
+				})
 
 			})
 		}
 		//update existing MCQ if mediaId
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			MCQ.findById(req.body.itemId, function(err, toUpdate) {
+			MCQ.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, MCQ with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, MCQ with id ' + req.body.itemId + ' does not exists')
 				} else {
-					logger.log('info','Updating MCQ ', JSON.stringify(toUpdate))
+					logger.log('info', 'Updating MCQ ', JSON.stringify(toUpdate))
 					toUpdate.owner = req.user._id
 					toUpdate.status = req.body.status
 					toUpdate.label = req.body.label
 					toUpdate.question = req.body.question
 					toUpdate.distractor1 = req.body.distractor1
 					toUpdate.distractor2 = req.body.distractor2
+					if (req.body.distractors) {
+						toUpdate.distractor = []
+						for (var i = 0; i < req.body.distractors.length; i++) {
+							toUpdate.distractors.push({
+								value: req.body.distractors[i]
+							})
+						}
+					}
 					toUpdate.response = req.body.response
 					toUpdate.wrongMessage = req.body.wrongMessage
 					toUpdate.correctMessage = req.body.correctMessage
 					toUpdate.media = req.body.mediaId
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
-							logger.log('error','Error while updating MCQ %s',err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							logger.log('error', 'Error while updating MCQ %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -748,17 +1019,24 @@ module.exports = function(app, gfs, logger) {
 
 
 	// Return the list of mcq owned by current user
-	app.get('/mcq', function(req, res) {
+	app.get('/mcq', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 			return
 		}
 
 
 		if (req.query && req.query.search) {
-			MCQ.find({ $text: { $search: req.query.search } })
+			MCQ.find({
+					$text: {
+						$search: req.query.search
+					}
+				})
 				.populate('media')
-				.exec(function(err, results) {
+				.exec(function (err, results) {
 					res.send(results)
 
 				})
@@ -768,10 +1046,18 @@ module.exports = function(app, gfs, logger) {
 
 
 		//        MCQ.find({ owner: req.user._id })
-		MCQ.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })
+		MCQ.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
 			.populate('media')
-			.exec(function(err, mcqs) {
+			.exec(function (err, mcqs) {
 				for (var i = 0; i < mcqs.length; i++) {
 					var mcq = mcqs[i]
 					if (mcq.owner == req.user._id) {
@@ -786,64 +1072,115 @@ module.exports = function(app, gfs, logger) {
 	})
 
 
-	app.get('/mcq/:id', function(req, res) {
-		MCQ.findOne({ '_id': req.params.id, })
+	app.get('/mcq/:id', function (req, res) {
+		MCQ.findOne({
+				'_id': req.params.id,
+			})
 			.populate('media')
-			.exec(function(err, mcq) {
+			.exec(function (err, mcq) {
 				res.send(mcq)
 			})
 
 
 	})
 
-	app.delete('/mcq/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		MCQ.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/mcq/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		MCQ.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 
 	})
 
-	app.post('/mlg', function(req, res) {
+	app.post('/mlg', function (req, res) {
 		var mlg = new MLG()
 
 		mlg.label = req.body.label
 		mlg.startpage = req.body.startpage
-		if (req.body.multi && req.body.multi === 'on') {
-			mlg.isCompetition = true
-			mlg.playerNbr = req.body.playerNbr
-		}
+		mlg.endPage = req.body.endPage
 		mlg.owner = req.user._id
 		mlg.status = req.body.status
-		mlg.gameDifficulty = req.body.gameDifficulty
-		mlg.gameDuration = req.body.gameDuration
-		mlg.gameProximity = req.body.gameProximity
-		mlg.unitGames = req.body.unitGames
+		mlg.difficulty = req.body.difficulty
+		mlg.duration = req.body.duration
+		mlg.unitGames = req.body.situatedunitgame
+		mlg.description = req.body.description
 		mlg.badge = req.body.badge
 		var now = new Date()
 		mlg.creationDate = now
+		if (!req.body.itemId) {
+			mlg.save(function (err) {
+				if (err) {
+					logger.log('error', 'Error while saving MLG %s', err.message)
+					return 500
+				}
 
-		mlg.save(function(err) {
-			if (err) {
-				logger.log('error','Error while saving MLG %s',err.message)
-				return 500
-			}
+				res.send({
+					success: true,
+					resource: mlg,
+					operation: 'create'
+				})
+			})
+		}
 
-			res.send({ success: true, resource: mlg, operation: 'create' })
-		})
+		if (req.body.itemId && req.body.itemId.length > 0) {
+			MLG.findById(req.body.itemId, function (err, toUpdate) {
+				if (!toUpdate) {
+					logger.log('error', 'Err, MLG with id ' + req.body.itemId + ' does not exists')
+				} else {
+					logger.log('info', 'Updating MLG %s', JSON.stringify(toUpdate))
+					toUpdate.label = req.body.label
+					toUpdate.startpage = req.body.startpage
+					toUpdate.endPage = req.body.endPage
+					toUpdate.owner = req.user._id
+					toUpdate.status = req.body.status
+					toUpdate.difficulty = req.body.difficulty
+					toUpdate.duration = req.body.duration
+					toUpdate.unitGames = req.body.situatedunitgame
+					toUpdate.description = req.body.description
+					toUpdate.badge = req.body.badge
+					toUpdate.save(function (err) {
+						if (err) {
+							logger.log('error', 'Error while updating MLG %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
+					})
 
+				}
+
+			})
+		}
 	})
 
 	//return a given game by idin
-	app.get('/unitgame/:id', function(req, res) {
-		Game.find({ '_id': req.params.id, })
+	app.get('/unitgame/:id', function (req, res) {
+		Game.find({
+				'_id': req.params.id,
+			})
 			.populate('startMedia')
 			.populate('feedbackMedia')
 			.populate('POI')
 			.populate('inventoryItem')
-			.exec(function(err, game) {
+			.exec(function (err, game) {
 				res.send(game)
 			})
 
@@ -855,7 +1192,7 @@ module.exports = function(app, gfs, logger) {
 
 
 	//Return the list of Game (user independant)
-	app.get('/unitgame', function(req, res) {
+	app.get('/unitgame', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -865,15 +1202,23 @@ module.exports = function(app, gfs, logger) {
 		}
 
 		//Game.find({ owner: req.user._id })
-		Game.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })
+		Game.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
 			.populate('startMedia')
 			.populate('feedbackMedia')
 			.populate('POI')
 			.populate('freetextActivities')
 			.populate('mcqActivities')
-			.populate('inventoryItem')
-			.exec(function(err, games) {
+			.deepPopulate(['inventoryItem','inventoryItem.media'])
+			.exec(function (err, games) {
 
 				for (var i = 0; i < games.length; i++) {
 					var game = games[i]
@@ -891,11 +1236,22 @@ module.exports = function(app, gfs, logger) {
 	})
 
 	// Self explaining
-	app.delete('/unitgame/:id', function(req, res) {
-		if (!req.user._id) { res.send({ success: false, message: 'user not authenticated' }) }
-		Game.findOneAndRemove({ '_id': req.params.id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/unitgame/:id', function (req, res) {
+		if (!req.user._id) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		Game.findOneAndRemove({
+				'_id': req.params.id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 
 	})
@@ -905,7 +1261,7 @@ module.exports = function(app, gfs, logger) {
 	// The game unit are saved in database mongodb://localhost/game to be accessible
 	//from the game server
 
-	app.post('/unitgame', function(req, res) {
+	app.post('/unitgame', function (req, res) {
 		var startMedia = null
 		var poi = null
 		var freetextActivities = []
@@ -997,11 +1353,11 @@ module.exports = function(app, gfs, logger) {
 			feedbackMedia = req.body.feedbackMedia
 		if (req.body.poi)
 			poi = req.body.poi
-		if (req.body.freetextActivities) {
-			freetextActivities = req.body.freetextActivities
+		if (req.body.situatedfreetext) {
+			freetextActivities = req.body.situatedfreetext
 		}
-		if (req.body.mcqActivities) {
-			mcqActivities = req.body.mcqActivities
+		if (req.body.situatedmcq) {
+			mcqActivities = req.body.situatedmcq
 		}
 
 
@@ -1048,20 +1404,24 @@ module.exports = function(app, gfs, logger) {
 
 
 		if (!req.body.itemId) {
-			game.save(function(err) {
+			game.save(function (err) {
 				if (err) {
-					logger.log('error','Error while saving unit game %s',err.message)
+					logger.log('error', 'Error while saving unit game %s', err.message)
 					return 500
 				}
 
-				res.send({ success: true, resource: game, operation: 'create' })
+				res.send({
+					success: true,
+					resource: game,
+					operation: 'create'
+				})
 			})
 			return
 		}
 		if (req.body.itemId && req.body.itemId.length > 0) {
-			Game.findById(req.body.itemId, function(err, toUpdate) {
+			Game.findById(req.body.itemId, function (err, toUpdate) {
 				if (!toUpdate) {
-					logger.log('error','Err, unitGame with id ' + req.body.itemId + ' does not exists')
+					logger.log('error', 'Err, unitGame with id ' + req.body.itemId + ' does not exists')
 				} else {
 					toUpdate.inventoryPage = req.body.inventoryStep
 					toUpdate.activity1Success = activity1Success
@@ -1094,11 +1454,17 @@ module.exports = function(app, gfs, logger) {
 					toUpdate.act1successMed = req.body.act1successMed
 					toUpdate.act2successScore = req.body.act2successScore
 					toUpdate.act2successMed = req.body.act2successMed
-					toUpdate.save(function(err) {
+					toUpdate.save(function (err) {
 						if (err) {
-							logger.log('error','Error while updating unit game %s',err.message)
-							res.send({ success: false })
-						} else res.send({ success: true, resource: toUpdate, operation: 'update' })
+							logger.log('error', 'Error while updating unit game %s', err.message)
+							res.send({
+								success: false
+							})
+						} else res.send({
+							success: true,
+							resource: toUpdate,
+							operation: 'update'
+						})
 
 					})
 
@@ -1109,7 +1475,7 @@ module.exports = function(app, gfs, logger) {
 
 	})
 	//handle reception lgof a complete game
-	app.get('/mlg', function(req, res) {
+	app.get('/mlg', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1119,10 +1485,18 @@ module.exports = function(app, gfs, logger) {
 		}
 
 		// MLG.find({ owner: req.user._id })
-		MLG.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-			.sort({ creationDate: -1 })            
-			.deepPopulate(['startpage', 'badge', 'unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities', 'unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
-			.exec(function(err, mlgs) {
+		MLG.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
+			.deepPopulate(['startpage','endPage', 'badge', 'unitGames', 'unitGames.startMedia', 'unitGames.feedbackMedia', 'unitGames.freetextActivities', 'unitGames.mcqActivities', 'unitGames.mcqActivities.media', 'unitGames.inventoryItem', 'unitGames.inventoryItem.media', 'unitGames.inventoryItem.inventoryDoc', 'unitGames.POI'])
+			.exec(function (err, mlgs) {
 				for (var i = 0; i < mlgs.length; i++) {
 					var mlg = mlgs[i]
 					if (mlg.owner == req.user._id) {
@@ -1134,7 +1508,7 @@ module.exports = function(app, gfs, logger) {
 				res.send(mlgs)
 			})
 	})
-	app.put('/unitgame/:id/share', function(req, res) {
+	app.put('/unitgame/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1147,7 +1521,7 @@ module.exports = function(app, gfs, logger) {
 	})
 
 
-	app.put('/mlg/:id/share', function(req, res) {
+	app.put('/mlg/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1160,7 +1534,7 @@ module.exports = function(app, gfs, logger) {
 	})
 
 
-	app.put('/freetext/:id/share', function(req, res) {
+	app.put('/freetextactivity/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1171,7 +1545,7 @@ module.exports = function(app, gfs, logger) {
 		switchStatus(FreeText, req, res)
 
 	})
-	app.put('/inventory/:id/share', function(req, res) {
+	app.put('/inventory/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1187,7 +1561,7 @@ module.exports = function(app, gfs, logger) {
 
 	//Put operation allow to chhane the metadata
 	// limited to share status for the moment 
-	app.put('/mcq/:id/share', function(req, res) {
+	app.put('/mcq/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1198,7 +1572,7 @@ module.exports = function(app, gfs, logger) {
 		switchStatus(MCQ, req, res)
 
 	})
-	app.put('/badge/:id/share', function(req, res) {
+	app.put('/badge/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1210,7 +1584,7 @@ module.exports = function(app, gfs, logger) {
 
 	})
 
-	app.put('/poi/:id/share', function(req, res) {
+	app.put('/poi/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1225,7 +1599,7 @@ module.exports = function(app, gfs, logger) {
 
 	//Put operation allow to chhane the metadata
 	// limited to share status for the moment 
-	app.put('/staticmedia/:id/share', function(req, res) {
+	app.put('/staticmedia/:id/share', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1239,21 +1613,27 @@ module.exports = function(app, gfs, logger) {
 
 
 
-	var switchStatus = function(model, req, res) {
-		model.findById(req.params.id, function(err, resp) {
+	var switchStatus = function (model, req, res) {
+		model.findById(req.params.id, function (err, resp) {
 			if (!err) {
 				if (resp && req.user._id == resp.owner) {
-					if (resp.status == 'Public') { resp.status = 'Private' } else {
+					if (resp.status == 'Public') {
+						resp.status = 'Private'
+					} else {
 						resp.status = 'Public'
 					}
-					resp.save(function(err) {
-						if (err) {
-							res.send({ success: false })
-						} else {
-							res.send({ success: true })
-						}
+					resp.save(function (err) {
+							if (err) {
+								res.send({
+									success: false
+								})
+							} else {
+								res.send({
+									success: true
+								})
+							}
 
-					}
+						}
 
 					)
 				} else {
@@ -1272,7 +1652,7 @@ module.exports = function(app, gfs, logger) {
 	//handle reception of a POI posted from a map,
 	// with possible trigger area
 
-	app.post('/poimap', function(req, res) {
+	app.post('/poimap', function (req, res) {
 		if (!req.isAuthenticated()) {
 			res.send({
 				success: false,
@@ -1305,46 +1685,52 @@ module.exports = function(app, gfs, logger) {
 			}
 		}
 		var Poi = new POI(poi)
-		Poi.save(function(err) {
+		Poi.save(function (err) {
 			if (err) {
-				logger.log('error','Error while saving POI %s',err.message)
+				logger.log('error', 'Error while saving POI %s', err.message)
 				return 500
 			}
-			res.send({ success: true, resource: Poi, operation: 'create' })
+			res.send({
+				success: true,
+				resource: Poi,
+				operation: 'create'
+			})
 		})
 
 
 	})
-	app.get('/poi/:id', function(req, res) {
-		POI.findOne({ '_id': req.params.id, }, function(err, poi) {
+	app.get('/poi/:id', function (req, res) {
+		POI.findOne({
+			'_id': req.params.id,
+		}, function (err, poi) {
 			res.send(poi)
 		})
 
 	})
 
-	app.get('/qrcode/:id', function(req, res) {
+	app.get('/qrcode/:id', function (req, res) {
 		//res.header('Content-Type', 'image/png');
 
 		tail = spawn('qrencode', ['-o', '-', '[' + req.params.id + ']', '-s', 30])
-		tail.stdout.on('data', function(data) {
+		tail.stdout.on('data', function (data) {
 			console.log('stdout: ' + data)
 			res.write(data, 'utf-8')
 		})
-		tail.stderr.on('data', function(data) {
+		tail.stderr.on('data', function (data) {
 			console.log('stderr: ' + data)
 			res.write(data, 'utf-8')
 		})
-		tail.on('exit', function(code) {
+		tail.on('exit', function (code) {
 			console.log('child process exited with code ' + code)
 			res.end(code)
 		})
 	})
 
 
-	app.get('/listUsers', function(req, res) {
+	app.get('/listUsers', function (req, res) {
 		var userPromises = []
 		User.find()
-			.exec(function(err, users) {
+			.exec(function (err, users) {
 				for (var i = 0; i < users.length; i++) {
 					userPromises.push(populateUsersPOI(users[i]))
 					userPromises.push(populateUsersMCQ(users[i]))
@@ -1356,8 +1742,8 @@ module.exports = function(app, gfs, logger) {
 					userPromises.push(populateUsersMLG(users[i]))
 
 				}
-			}).then(function(users) {
-				Promise.all(userPromises).then(function() {
+			}).then(function (users) {
+				Promise.all(userPromises).then(function () {
 					res.send(users)
 				})
 
@@ -1365,88 +1751,118 @@ module.exports = function(app, gfs, logger) {
 
 	})
 	// Self explaining
-	app.get('/poi', function(req, res) {
+	app.get('/poi', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, 'message': 'please authenticate' })
+			res.send({
+				success: false,
+				'message': 'please authenticate'
+			})
 		} else
-		//POI.find({ owner: req.user._id }) 
-			POI.find({ $or: [{ owner: req.user._id }, { status: 'Public' }] })
-				.sort({ creationDate: -1 })
-				.exec(function(err, pois) {
-					for (var i = 0; i < pois.length; i++) {
-						var poi = pois[i]
-						if (poi.owner == req.user._id) {
-							poi.readonly = 'readwrite'
-						} else {
-							poi.readonly = 'readonly'
-						}
+			//POI.find({ owner: req.user._id }) 
+			POI.find({
+				$or: [{
+					owner: req.user._id
+				}, {
+					status: 'Public'
+				}]
+			})
+			.sort({
+				creationDate: -1
+			})
+			.exec(function (err, pois) {
+				for (var i = 0; i < pois.length; i++) {
+					var poi = pois[i]
+					if (poi.owner == req.user._id) {
+						poi.readonly = 'readwrite'
+					} else {
+						poi.readonly = 'readonly'
 					}
+				}
 
-					res.send(pois)
-				})
+				res.send(pois)
+			})
 	})
 
 
 
-	var populateUsersPOI = function(user) {
-		return POI.find({ owner: user._id })
-			.exec(function(err, pois) {
+	var populateUsersPOI = function (user) {
+		return POI.find({
+				owner: user._id
+			})
+			.exec(function (err, pois) {
 				user.POI = pois
 			})
 	}
 
-	var populateUsersMCQ = function(user) {
-		return MCQ.find({ owner: user._id })
-			.exec(function(err, mcqs) {
+	var populateUsersMCQ = function (user) {
+		return MCQ.find({
+				owner: user._id
+			})
+			.exec(function (err, mcqs) {
 				user.MCQ = mcqs
 			})
 	}
 
 
-	var populateUsersFreetext = function(user) {
-		return FreeText.find({ owner: user._id })
-			.exec(function(err, freetexts) {
+	var populateUsersFreetext = function (user) {
+		return FreeText.find({
+				owner: user._id
+			})
+			.exec(function (err, freetexts) {
 				user.Freetexts = freetexts
 			})
 	}
 
-	var populateUsersStaticMedia = function(user) {
-		return StaticMedia.find({ owner: user._id })
-			.exec(function(err, staticmedias) {
+	var populateUsersStaticMedia = function (user) {
+		return StaticMedia.find({
+				owner: user._id
+			})
+			.exec(function (err, staticmedias) {
 				user.staticMedias = staticmedias
 			})
 	}
-	var populateUsersUnitGames = function(user) {
-		return Game.find({ owner: user._id })
-			.exec(function(err, unitGames) {
+	var populateUsersUnitGames = function (user) {
+		return Game.find({
+				owner: user._id
+			})
+			.exec(function (err, unitGames) {
 				user.unitGames = unitGames
 			})
 	}
 
-	var populateUsersBadges = function(user) {
-		return Badge.find({ owner: user._id })
-			.exec(function(err, badges) {
+	var populateUsersBadges = function (user) {
+		return Badge.find({
+				owner: user._id
+			})
+			.exec(function (err, badges) {
 				user.Badges = badges
 			})
 	}
-	var populateUsersInventory = function(user) {
-		return InventoryItem.find({ owner: user._id })
-			.exec(function(err, items) {
+	var populateUsersInventory = function (user) {
+		return InventoryItem.find({
+				owner: user._id
+			})
+			.exec(function (err, items) {
 				user.inventoryItems = items
 			})
 	}
 
-	var populateUsersMLG = function(user) {
-		return MLG.find({ owner: user._id })
-			.exec(function(err, mlgs) {
+	var populateUsersMLG = function (user) {
+		return MLG.find({
+				owner: user._id
+			})
+			.exec(function (err, mlgs) {
 				user.MLG = mlgs
 			})
 	}
 
 
-	app.get('/userImages', function(req, res) {
+	app.get('/userImages', function (req, res) {
 		var targetUser = req.param('userId')
-		gfs.files.find({ contentType: /.*image.*/, 'metadata.owner': targetUser }).toArray(function(err, images) {
+		gfs.files.find({
+			contentType: /.*image.*/,
+			'metadata.owner': targetUser
+		}).toArray(function (err, images) {
 			res.send(images)
 		})
 	})
@@ -1454,136 +1870,240 @@ module.exports = function(app, gfs, logger) {
 
 
 	// Self explaining
-	app.delete('/poi/:id', function(req, res) {
-		if (!req.user) { res.send({ success: false, message: 'user not authenticated' }) }
-		POI.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
-			})
-	})
-
-
-	app.delete('/user/:id', function(req, res) {
-		if (!req.user) { res.send({ success: false, message: 'user not authenticated' }) }
-		if (!req.user.isadmin) { res.send({ success: false, message: 'Only admin can suppress acount' }) }
-
-		User.findOneAndRemove({ '_id': req.params.id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
-			})
-	})
-
-
-	app.delete('/userResources', function(req, res) {
+	app.delete('/poi/:id', function (req, res) {
 		if (!req.user) {
-			res.send({ success: false, message: 'user not authenticated' })
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		POI.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
+			})
+	})
+
+
+	app.delete('/user/:id', function (req, res) {
+		if (!req.user) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
+		}
+		if (!req.user.isadmin) {
+			res.send({
+				success: false,
+				message: 'Only admin can suppress acount'
+			})
+		}
+
+		User.findOneAndRemove({
+				'_id': req.params.id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
+			})
+	})
+
+
+	app.delete('/userResources', function (req, res) {
+		if (!req.user) {
+			res.send({
+				success: false,
+				message: 'user not authenticated'
+			})
 		}
 
 		if (!req.user.isadmin) {
-			res.send({ success: false, message: 'Only admin can suppress resources' })
+			res.send({
+				success: false,
+				message: 'Only admin can suppress resources'
+			})
 		}
 
 		var userTarget = req.param('targetUser')
 		switch (req.param('resourceType')) {
-		case 'POI':
-			removeUserPOIs(userTarget, res)
-			break
-		case 'MCQ':
-			removeUserMCQs(userTarget, res)
-			break
-		case 'FreeText':
-			removeUserFreetexts(userTarget, res)
-			break
-		case 'StaticMedia':
-			removeUserStaticMedias(userTarget, res)
-			break
-		case 'UnitGame':
-			removeUserUnitgames(userTarget, res)
-			break
-		case 'Badge':
-			removeUserBadges(userTarget, res)
-			break
-		case 'Inventory':
-			removeUserInventory(userTarget, res)
-			break
-		case 'MLG':
-			removeUserMLGs(userTarget, res)
-			break
-		case 'Image':
-			removeUserImages(userTarget, res)
+			case 'POI':
+				removeUserPOIs(userTarget, res)
+				break
+			case 'MCQ':
+				removeUserMCQs(userTarget, res)
+				break
+			case 'FreeText':
+				removeUserFreetexts(userTarget, res)
+				break
+			case 'StaticMedia':
+				removeUserStaticMedias(userTarget, res)
+				break
+			case 'UnitGame':
+				removeUserUnitgames(userTarget, res)
+				break
+			case 'Badge':
+				removeUserBadges(userTarget, res)
+				break
+			case 'Inventory':
+				removeUserInventory(userTarget, res)
+				break
+			case 'MLG':
+				removeUserMLGs(userTarget, res)
+				break
+			case 'Image':
+				removeUserImages(userTarget, res)
 
 		}
 	})
 
 
-	var removeUserPOIs = function(userTarget, res) {
-		return POI.remove({ owner: userTarget })
-			.exec(function(err, pois) {
-				res.send({ success: true, resourceType: 'POI', operation: 'bulkDelete',resource:pois })
+	var removeUserPOIs = function (userTarget, res) {
+		return POI.remove({
+				owner: userTarget
+			})
+			.exec(function (err, pois) {
+				res.send({
+					success: true,
+					resourceType: 'POI',
+					operation: 'bulkDelete',
+					resource: pois
+				})
 
 			})
 	}
 
-	var removeUserMCQs = function(userTarget, res) {
-		return MCQ.remove({ owner: userTarget })
-			.exec(function(err, mcqs) {
-				res.send({ success: true, resourceType: 'MCQ', operation: 'bulkDelete',resource:mcqs })
+	var removeUserMCQs = function (userTarget, res) {
+		return MCQ.remove({
+				owner: userTarget
+			})
+			.exec(function (err, mcqs) {
+				res.send({
+					success: true,
+					resourceType: 'MCQ',
+					operation: 'bulkDelete',
+					resource: mcqs
+				})
 			})
 	}
 
 
-	var removeUserFreetexts = function(userTarget, res) {
-		return FreeText.remove({ owner: userTarget })
-			.exec(function(err, freetexts) {
-				res.send({ success: true, resourceType: 'FreeText', operation: 'bulkDelete',resource:freetexts })
+	var removeUserFreetexts = function (userTarget, res) {
+		return FreeText.remove({
+				owner: userTarget
+			})
+			.exec(function (err, freetexts) {
+				res.send({
+					success: true,
+					resourceType: 'FreeText',
+					operation: 'bulkDelete',
+					resource: freetexts
+				})
 			})
 	}
 
-	var removeUserStaticMedias = function(userTarget, res) {
-		return StaticMedia.remove({ owner: userTarget })
-			.exec(function(err, staticmedias) {
-				res.send({ success: true, resourceType: 'multimedia documents', operation: 'bulkDelete',resource:staticmedias })
+	var removeUserStaticMedias = function (userTarget, res) {
+		return StaticMedia.remove({
+				owner: userTarget
+			})
+			.exec(function (err, staticmedias) {
+				res.send({
+					success: true,
+					resourceType: 'multimedia documents',
+					operation: 'bulkDelete',
+					resource: staticmedias
+				})
 			})
 	}
-	var removeUserUnitgames = function(userTarget, res) {
-		return Game.remove({ owner: userTarget })
-			.exec(function(err, unitGames) {
-				res.send({ success: true, resourceType: 'unité de jeux', operation: 'bulkDelete',resource:unitGames })
+	var removeUserUnitgames = function (userTarget, res) {
+		return Game.remove({
+				owner: userTarget
 			})
-	}
-
-	var removeUserBadges = function(userTarget, res) {
-		return Badge.remove({ owner: userTarget })
-			.exec(function(err, badges) {
-				res.send({ success: true, resourceType: 'badges', operation: 'bulkDelete',resource:badges })
-			})
-	}
-	var removeUserInventory = function(userTarget, res) {
-		return InventoryItem.remove({ owner: userTarget })
-			.exec(function(err, items) {
-				res.send({ success: true, resourceType: 'inventaire', operation: 'bulkDelete',resource:items })
-			})
-	}
-
-	var removeUserMLGs = function(userTarget, res) {
-		return MLG.remove({ owner: userTarget })
-			.exec(function(err, mlgs) {
-				res.send({ success: true, resourceType: 'MLG', operation: 'bulkDelete',resource:mlgs })
+			.exec(function (err, unitGames) {
+				res.send({
+					success: true,
+					resourceType: 'unité de jeux',
+					operation: 'bulkDelete',
+					resource: unitGames
+				})
 			})
 	}
 
+	var removeUserBadges = function (userTarget, res) {
+		return Badge.remove({
+				owner: userTarget
+			})
+			.exec(function (err, badges) {
+				res.send({
+					success: true,
+					resourceType: 'badges',
+					operation: 'bulkDelete',
+					resource: badges
+				})
+			})
+	}
+	var removeUserInventory = function (userTarget, res) {
+		return InventoryItem.remove({
+				owner: userTarget
+			})
+			.exec(function (err, items) {
+				res.send({
+					success: true,
+					resourceType: 'inventaire',
+					operation: 'bulkDelete',
+					resource: items
+				})
+			})
+	}
+
+	var removeUserMLGs = function (userTarget, res) {
+		return MLG.remove({
+				owner: userTarget
+			})
+			.exec(function (err, mlgs) {
+				res.send({
+					success: true,
+					resourceType: 'MLG',
+					operation: 'bulkDelete',
+					resource: mlgs
+				})
+			})
+	}
 
 
-	var removeUserImages = function(userTarget, res) {
-		gfs.files.remove({ contentType: /.*image.*/, 'metadata.owner': userTarget }, function() {
-			res.send({ success: true, resourceType: 'Images', operation: 'bulkDelete' })
+
+	var removeUserImages = function (userTarget, res) {
+		gfs.files.remove({
+			contentType: /.*image.*/,
+			'metadata.owner': userTarget
+		}, function () {
+			res.send({
+				success: true,
+				resourceType: 'Images',
+				operation: 'bulkDelete'
+			})
 		})
 	}
 
-	app.delete('/mlg/:id', function(req, res) {
-		MLG.findOneAndRemove({ '_id': req.params.id, owner: req.user._id },
-			function(err, doc) {
-				res.send({ success: true, resource: doc, operation: 'delete' })
+	app.delete('/mlg/:id', function (req, res) {
+		MLG.findOneAndRemove({
+				'_id': req.params.id,
+				owner: req.user._id
+			},
+			function (err, doc) {
+				res.send({
+					success: true,
+					resource: doc,
+					operation: 'delete'
+				})
 			})
 
 	})
