@@ -9,8 +9,6 @@ var mcqSchema = mongoose.Schema({
     status: String,    
     creationDate:Date,
     question: String,
-    distractor1: String,
-    distractor2: String,
     distractors:Array,
     response: String,
     media: { type: Schema.Types.ObjectId, ref: 'StaticMedia' },
