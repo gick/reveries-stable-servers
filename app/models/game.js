@@ -23,6 +23,7 @@ var gameSchema = mongoose.Schema({
     status: String,
     freetextActivities: [{ type: Schema.Types.ObjectId, ref: 'FreeText' }],
     mcqActivities: [{ type: Schema.Types.ObjectId, ref: 'MCQ' }],
+    identificationActivity:{type:Schema.Types.ObjectId,ref:'Folia'},
     feedbackMedia: { type: Schema.Types.ObjectId, ref: 'StaticMedia' },
     status: { type: String, default: 'Private' },
     clueGuidance: { type: Schema.Types.ObjectId, ref: 'StaticMedia' },

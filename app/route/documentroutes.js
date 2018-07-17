@@ -34,7 +34,7 @@ module.exports = function (app, gfs, logger) {
 		folia.targetSpecies = req.body.targetSpecies
 		folia.correctMessage = req.body.correctMessage
 		folia.wrongMessage = req.body.wrongMessage
-		folia.question = req.body.questions
+		folia.question = req.body.question
 
 		folia.save(function (err, resource) {
 			if (err) {
@@ -1385,6 +1385,7 @@ module.exports = function (app, gfs, logger) {
 			.populate('startMedia')
 			.populate('feedbackMedia')
 			.populate('POI')
+			.populate('identificationActivity')
 			.deepPopulate(['inventoryItem','inventoryItem.media','freetextActivities','freetextactivities.media','mcqActivities','mcqActivities.media'])
 			.exec(function (err, games) {
 
@@ -1569,7 +1570,7 @@ module.exports = function (app, gfs, logger) {
 		game.act1successMed = req.body.act1successMed
 		game.act2successScore = req.body.act2successScore
 		game.act2successMed = req.body.act2successMed
-
+		game.identificationActivity=req.body.situatedfolia
 
 		if (!req.body.itemId) {
 			game.save(function (err) {
@@ -1622,6 +1623,8 @@ module.exports = function (app, gfs, logger) {
 					toUpdate.act1successMed = req.body.act1successMed
 					toUpdate.act2successScore = req.body.act2successScore
 					toUpdate.act2successMed = req.body.act2successMed
+					toUpdate.identificationActivity=game.identificationActivity
+
 					toUpdate.save(function (err) {
 						if (err) {
 							logger.log('error', 'Error while updating unit game %s', err.message)
